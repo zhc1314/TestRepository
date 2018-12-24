@@ -7,4 +7,9 @@ public class TestOut {
     public String sayHello(){
         return "你好，世界!";
     }
+
+    //欢迎你来带这个美丽多彩的世界
+    public void goAbroad(){
+        System.out.println("只身一人来到这个世界");
+    }
 }
