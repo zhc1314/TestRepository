@@ -12,4 +12,9 @@ public class TestOut {
     public void goAbroad(){
         System.out.println("只身一人来到这个世界");
     }
+
+    //测试方法
+    public void sayHi(){
+        System.out.println("tell me why!");
+    }
 }
