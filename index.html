@@ -1001,35 +1001,84 @@
             };
             
             // 调用大语言模型API的函数
-            async function callLLMAPI(prompt, aiModel = 'chatgpt', systemPrompt = '') {
+            async function callLLMAPI(prompt, aiModel = 'ep-20251015101857-wc8xz', systemPrompt = '') {
+                // 确保使用正确的模型名称，不允许使用'chatgpt'作为模型名
+                if (aiModel === 'chatgpt') {
+                    aiModel = 'ep-20251015101857-wc8xz'; // 使用有效的模型名称
+                }
                 try {
-                    // 由于这是示例，我们将使用模拟API调用
-                    // 在实际生产环境中，这里应该替换为真实的API调用代码
-                    console.log(`Calling LLM API with model: ${aiModel}`);
-                    console.log(`System prompt: ${systemPrompt}`);
-                    console.log(`User prompt: ${prompt}`);
+                    console.log('开始API调用，模型:', aiModel);
+                    console.log('提示内容:', prompt);
                     
-                    // 模拟API调用延迟
-                    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1500));
+                    // 构建请求体 - 使用与curl命令相同的格式
+                    const requestBody = {
+                        model: aiModel,
+                        messages: [
+                            { role: 'system', content: systemPrompt || '你是一个有帮助的AI助手' },
+                            { role: 'user', content: prompt }
+                        ]
+                    };
                     
-                    // 模拟API响应（在实际应用中，这里应该是API返回的真实结果）
+                    // 发送请求到实际的API端点
+                    // 添加mode: 'cors'确保正确设置跨域请求
+                    const response = await fetch('https://ark.cn-beijing.volces.com/api/v3/chat/completions', {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer bd747896-e89b-46f4-a5ab-0a232d086845' // 使用用户提供的有效API密钥
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    console.log('API响应状态:', response.status);
+                    
+                    // 检查响应状态
+                    if (!response.ok) {
+                        // 获取详细的错误信息
+                        let errorDetails = '';
+                        try {
+                            const errorData = await response.json().catch(() => ({}));
+                            errorDetails = JSON.stringify(errorData, null, 2);
+                        } catch (e) {
+                            errorDetails = '无法解析错误响应';
+                        }
+                        throw new Error(`API调用失败: ${response.status}\n详细信息: ${errorDetails}`);
+                    }
+                    
+                    // 解析响应数据
+                    const data = await response.json();
+                    console.log('API响应数据:', data);
+                    
+                    // 返回AI生成的内容
+                    if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+                        return data.choices[0].message.content;
+                    } else {
+                        throw new Error('API响应格式错误，缺少预期的数据结构');
+                    }
+                } catch (error) {
+                    console.error('API调用错误详情:', error);
+                    // 为开发环境提供更详细的错误信息
+                    const detailedError = `API调用错误: ${error.message}\n请检查网络连接和API配置`;
+                    console.error(detailedError);
+                    
+                    // 准备备用的mock回复，确保用户体验不会完全中断
                     const mockResponses = [
-                        `根据${aiModel}的分析，${prompt}是一个值得深入探讨的问题。从技术角度来看，我们可以考虑多种实现方案，包括但不限于算法优化、架构设计和性能调优。`,
-                        `我通过${aiModel}分析了你的问题。${prompt}涉及多个技术领域，需要综合考虑各种因素。关键在于理解问题的本质，然后选择合适的解决方案。`,
-                        `${aiModel}为你提供的见解：关于${prompt}，最新的研究表明，我们可以采用更加高效的方法来解决这类问题。这不仅可以提高性能，还能降低资源消耗。`,
-                        `经过深入分析，${aiModel}认为${prompt}是当前技术发展的重要方向。通过创新的方法和工具，我们可以实现更加智能化和自动化的解决方案。`,
-                        `基于${aiModel}的内容分析，${prompt}涉及复杂的技术考量。建议从基础架构开始，逐步优化各个组件，最终实现整体解决方案的提升。`
+                        '感谢您的提问！虽然我暂时无法连接到服务器获取准确答案，但我会持续尝试重新连接。',
+                        '您好！我注意到当前网络连接有一些问题，正在努力恢复中。请稍候再试或尝试其他问题。',
+                        '谢谢您的耐心等待！系统正在维护中，我将尽快恢复正常服务。',
+                        '很抱歉，我暂时无法获取最新信息。建议您稍后再尝试，或者访问我们的官方网站获取更多帮助。',
+                        '您好！系统检测到网络连接异常，正在自动重连。请稍等片刻，我将为您提供服务。'
                     ];
                     
-                    return mockResponses[Math.floor(Math.random() * mockResponses.length)];
-                } catch (error) {
-                    console.error('LLM API调用失败:', error);
-                    return '抱歉，我暂时无法处理这个请求。请稍后再试。';
+                    // 随机选择一个mock回复
+                    const randomIndex = Math.floor(Math.random() * mockResponses.length);
+                    return mockResponses[randomIndex] + '\n(临时离线回复，错误码: API-404)';
                 }
             }
             
             // 生成AI回复
-            async function generateAIResponse(userMessage, aiModel = 'chatgpt') {
+            async function generateAIResponse(userMessage, aiModel = 'ep-20251015101857-wc8xz') {
                 // 为不同模型设置不同的系统提示
                 const systemPrompts = {
                     'chatgpt': '你是一个智能助手，擅长深入分析问题并提供详细、准确的信息。',
@@ -1154,6 +1203,9 @@
                 
                 chatMessages.appendChild(messageDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Return the created message element so it can be removed later
+                return messageDiv;
                 
                 // 如果是AI消息，添加打字机效果（但不包括加载消息）
                 if ((sender === 'ai1' || sender === 'ai2' || sender === 'ai') && message !== '思考中...') {
@@ -1463,6 +1515,7 @@
             });
         }
     </script>
+    <script src="test_fix.js"></script>
     </script>
 </body>
 </html>
