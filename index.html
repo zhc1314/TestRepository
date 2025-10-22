@@ -75,6 +75,107 @@
             animation: particleMove linear infinite;
         }
         
+        /* 粒子移动动画 */
+        @keyframes particleMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(var(--move-x, 0), var(--move-y, 0)); }
+        }
+        
+        /* 鼠标跟随粒子 */
+        .mouse-particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 9999;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, opacity 0.3s;
+            mix-blend-mode: screen;
+        }
+        
+        /* 霓虹辉光效果 */
+        .neon-glow {
+            position: relative;
+        }
+        
+        .neon-glow::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            filter: blur(15px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .neon-glow:hover::after {
+            opacity: 0.7;
+        }
+        
+        /* 滚动入场动画 */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* 按钮高级悬停效果 */
+        .btn-hover-effect {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn-hover-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+            z-index: -1;
+        }
+        
+        .btn-hover-effect:hover::before {
+            left: 100%;
+        }
+        
+        /* 卡片悬停3D效果 */
+        .card-hover-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s ease;
+        }
+        
+        .card-hover-3d:hover {
+            transform: perspective(1000px) rotateX(5deg) rotateY(5deg) translateZ(10px);
+        }
+        
+        /* 文字呼吸效果 */
+        .text-breath {
+            animation: breath 4s ease-in-out infinite;
+        }
+        
+        @keyframes breath {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        
+        /* 视差滚动效果 */
+        .parallax {
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
         /* 渐变背景动画 */
         body {
             background: linear-gradient(-45deg, #111827, #1F2937, #111827, #374151);
@@ -164,27 +265,27 @@
                         欢迎来到全新体验
                     </span>
                 </div>
-                <h1 class="text-[clamp(2.5rem,8vw,5rem)] font-bold leading-tight mb-6 text-gradient bg-gradient-to-r from-primary to-secondary">
-                    欢迎，<span class="text-white">开启精彩之旅</span>
+                <h1 class="text-[clamp(2.5rem,8vw,5rem)] font-bold leading-tight mb-6 text-gradient bg-gradient-to-r from-primary to-secondary text-breath">
+                    欢迎，<span class="text-white neon-glow">开启精彩之旅</span>
                 </h1>
                 <p class="text-[clamp(1rem,3vw,1.25rem)] text-gray-300 mb-10 max-w-2xl mx-auto">
                     探索无限可能，发现全新世界。这里是您的起点，让我们一起创造精彩。
                 </p>
                 <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-16">
-                    <button class="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2">
+                    <button class="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2 btn-hover-effect">
                         <i class="fa fa-rocket"></i>
                         开始探索
                     </button>
-                    <button class="w-full sm:w-auto bg-white/10 hover:bg-white/20 backdrop-blur-xl text-white font-medium py-4 px-8 rounded-full transition-all duration-300 flex items-center justify-center gap-2">
+                    <button class="w-full sm:w-auto bg-white/10 hover:bg-white/20 backdrop-blur-xl text-white font-medium py-4 px-8 rounded-full transition-all duration-300 flex items-center justify-center gap-2 btn-hover-effect">
                         <i class="fa fa-play-circle-o"></i>
                         观看介绍
                     </button>
                 </div>
                 
                 <!-- 动画图片 -->
-                <div class="relative w-full max-w-2xl mx-auto animate-float">
+                <div class="relative w-full max-w-2xl mx-auto animate-float parallax">
                     <div class="absolute inset-0 bg-gradient-to-r from-primary to-secondary rounded-3xl blur-3xl opacity-20 animate-pulse-slow"></div>
-                    <div class="relative bg-white/5 backdrop-blur-xl rounded-3xl p-2 border border-white/10 shadow-2xl overflow-hidden">
+                    <div class="relative bg-white/5 backdrop-blur-xl rounded-3xl p-2 border border-white/10 shadow-2xl overflow-hidden card-hover-3d neon-glow">
                         <img src="https://picsum.photos/id/1/800/400" alt="欢迎界面" class="w-full h-auto rounded-xl">
                     </div>
                 </div>
@@ -209,8 +310,8 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- 功能卡片 1 -->
-                <div class="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:border-primary/30">
-                    <div class="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center mb-6">
+                <div class="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:border-primary/30 reveal card-hover-3d">
+                    <div class="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center mb-6 neon-glow">
                         <i class="fa fa-bolt text-primary text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-4">高性能体验</h3>
@@ -218,8 +319,8 @@
                 </div>
                 
                 <!-- 功能卡片 2 -->
-                <div class="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:border-secondary/30">
-                    <div class="w-16 h-16 rounded-xl bg-secondary/20 flex items-center justify-center mb-6">
+                <div class="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:border-secondary/30 reveal card-hover-3d" style="transition-delay: 0.2s;">
+                    <div class="w-16 h-16 rounded-xl bg-secondary/20 flex items-center justify-center mb-6 neon-glow">
                         <i class="fa fa-shield text-secondary text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-4">安全保障</h3>
@@ -227,8 +328,8 @@
                 </div>
                 
                 <!-- 功能卡片 3 -->
-                <div class="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:border-accent/30">
-                    <div class="w-16 h-16 rounded-xl bg-accent/20 flex items-center justify-center mb-6">
+                <div class="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:border-accent/30 reveal card-hover-3d" style="transition-delay: 0.4s;">
+                    <div class="w-16 h-16 rounded-xl bg-accent/20 flex items-center justify-center mb-6 neon-glow">
                         <i class="fa fa-cogs text-accent text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-4">自定义选项</h3>
@@ -270,7 +371,7 @@
                             <span class="text-gray-200">响应式设计，适配各种设备</span>
                         </li>
                     </ul>
-                    <button class="bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-8 rounded-full transition-all duration-300 flex items-center gap-2">
+                    <button class="bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-8 rounded-full transition-all duration-300 flex items-center gap-2 btn-hover-effect">
                         <span>了解更多</span>
                         <i class="fa fa-arrow-right"></i>
                     </button>
@@ -278,7 +379,7 @@
                 <div class="order-1 md:order-2 relative">
                     <div class="absolute -top-10 -left-10 w-20 h-20 rounded-full bg-primary/30 blur-2xl"></div>
                     <div class="absolute -bottom-10 -right-10 w-20 h-20 rounded-full bg-secondary/30 blur-2xl"></div>
-                    <div class="relative bg-white/5 backdrop-blur-xl rounded-2xl p-2 border border-white/10 shadow-2xl">
+                    <div class="relative bg-white/5 backdrop-blur-xl rounded-2xl p-2 border border-white/10 shadow-2xl card-hover-3d neon-glow parallax">
                         <img src="https://picsum.photos/id/20/600/400" alt="产品展示" class="w-full h-auto rounded-xl">
                     </div>
                 </div>
@@ -314,7 +415,7 @@
                         <label for="message" class="block text-sm font-medium text-gray-300 mb-2">留言</label>
                         <textarea id="message" rows="5" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
                     </div>
-                    <button type="submit" class="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-4 px-6 rounded-lg transition-all duration-300 transform hover:shadow-lg">
+                    <button type="submit" class="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-4 px-6 rounded-lg transition-all duration-300 transform hover:shadow-lg btn-hover-effect neon-glow">
                         发送消息
                     </button>
                 </form>
@@ -487,7 +588,12 @@
         }
         
         // 页面加载完成后创建粒子
-        window.addEventListener('load', createParticles);
+        window.addEventListener('load', () => {
+            createParticles();
+            initMouseParticles();
+            initRevealAnimation();
+            initParallax();
+        });
         
         // 添加表单提交事件
         const form = document.querySelector('form');
@@ -499,16 +605,162 @@
                 form.reset();
             });
         }
+        
+        // 鼠标跟随粒子效果
+        function initMouseParticles() {
+            const body = document.body;
+            const particleCount = 15;
+            let particles = [];
+            
+            // 创建粒子容器
+            const mouseParticlesContainer = document.createElement('div');
+            mouseParticlesContainer.style.position = 'fixed';
+            mouseParticlesContainer.style.top = '0';
+            mouseParticlesContainer.style.left = '0';
+            mouseParticlesContainer.style.pointerEvents = 'none';
+            mouseParticlesContainer.style.zIndex = '9998';
+            body.appendChild(mouseParticlesContainer);
+            
+            // 创建主跟随光效
+            const mainParticle = document.createElement('div');
+            mainParticle.classList.add('mouse-particle');
+            mainParticle.style.width = '150px';
+            mainParticle.style.height = '150px';
+            mainParticle.style.opacity = '0.6';
+            body.appendChild(mainParticle);
+            
+            // 创建子粒子
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '9998';
+                particle.style.width = `${Math.random() * 5 + 2}px`;
+                particle.style.height = `${Math.random() * 5 + 2}px`;
+                particle.style.borderRadius = '50%';
+                particle.style.backgroundColor = ['#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B'][Math.floor(Math.random() * 5)];
+                particle.style.opacity = '0';
+                particle.style.transition = 'opacity 0.3s, transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                particle.style.willChange = 'transform, opacity';
+                
+                mouseParticlesContainer.appendChild(particle);
+                particles.push({
+                    element: particle,
+                    x: 0,
+                    y: 0,
+                    targetX: 0,
+                    targetY: 0,
+                    delay: i * 0.03,
+                    distance: Math.random() * 30 + 10,
+                    angle: Math.random() * Math.PI * 2
+                });
+            }
+            
+            // 鼠标移动事件
+            body.addEventListener('mousemove', (e) => {
+                const x = e.clientX;
+                const y = e.clientY;
+                
+                // 更新主粒子位置
+                mainParticle.style.left = `${x}px`;
+                mainParticle.style.top = `${y}px`;
+                
+                // 更新子粒子目标位置
+                particles.forEach(particle => {
+                    particle.targetX = x + Math.cos(particle.angle) * particle.distance;
+                    particle.targetY = y + Math.sin(particle.angle) * particle.distance;
+                    particle.angle += (Math.random() - 0.5) * 0.1;
+                });
+            });
+            
+            // 鼠标离开页面
+            body.addEventListener('mouseleave', () => {
+                mainParticle.style.opacity = '0';
+                particles.forEach(particle => {
+                    particle.element.style.opacity = '0';
+                });
+            });
+            
+            // 鼠标进入页面
+            body.addEventListener('mouseenter', () => {
+                mainParticle.style.opacity = '0.6';
+                particles.forEach(particle => {
+                    particle.element.style.opacity = '0.8';
+                });
+            });
+            
+            // 动画循环
+            function animate() {
+                particles.forEach(particle => {
+                    // 缓动效果
+                    particle.x += (particle.targetX - particle.x) * 0.2;
+                    particle.y += (particle.targetY - particle.y) * 0.2;
+                    
+                    // 更新位置
+                    particle.element.style.left = `${particle.x}px`;
+                    particle.element.style.top = `${particle.y}px`;
+                    particle.element.style.opacity = '0.8';
+                });
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+            
+            // 按钮交互增强
+            document.querySelectorAll('button').forEach(button => {
+                button.addEventListener('mouseenter', () => {
+                    mainParticle.style.width = '200px';
+                    mainParticle.style.height = '200px';
+                    mainParticle.style.opacity = '0.8';
+                });
+                
+                button.addEventListener('mouseleave', () => {
+                    mainParticle.style.width = '150px';
+                    mainParticle.style.height = '150px';
+                    mainParticle.style.opacity = '0.6';
+                });
+            });
+        }
+        
+        // 滚动触发的元素入场动画
+        function initRevealAnimation() {
+            const revealElements = document.querySelectorAll('.reveal');
+            
+            function checkReveal() {
+                revealElements.forEach(element => {
+                    const elementTop = element.getBoundingClientRect().top;
+                    const elementVisible = 150;
+                    
+                    if (elementTop < window.innerHeight - elementVisible) {
+                        element.classList.add('active');
+                    }
+                });
+            }
+            
+            // 初始检查
+            checkReveal();
+            
+            // 滚动时检查
+            window.addEventListener('scroll', checkReveal);
+        }
+        
+        // 视差滚动效果
+        function initParallax() {
+            const parallaxElements = document.querySelectorAll('.parallax');
+            
+            window.addEventListener('mousemove', (e) => {
+                const mouseX = e.clientX / window.innerWidth - 0.5;
+                const mouseY = e.clientY / window.innerHeight - 0.5;
+                
+                parallaxElements.forEach(element => {
+                    const movementX = mouseX * 30;
+                    const movementY = mouseY * 30;
+                    element.style.transform = `translate(${movementX}px, ${movementY}px)`;
+                });
+            });
+        }
     </script>
-    <script>
-var _hmt = _hmt || [];
-(function() {
-  var hm = document.createElement("script");
-  hm.src = "https://hm.baidu.com/hm.js?22c6a7b04eda79bc77678ca5c629fd77";
-  var s = document.getElementsByTagName("script")[0];
-  s.parentNode.insertBefore(hm, s);
-})();
-</script>
-</script>
+    </script>
 </body>
 </html>
