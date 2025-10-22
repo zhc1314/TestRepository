@@ -266,16 +266,23 @@
         section {
             margin-bottom: 100px;
             padding: 50px;
-            background: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.9);
             border-radius: 12px;
             box-shadow: 0 6px 30px rgba(0,0,0,0.05);
             position: relative;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
         }
 
         section:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        section.collapsed {
+            padding-bottom: 20px;
+            transform: scale(0.98);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
         }
 
         section::before {
@@ -286,6 +293,24 @@
             right: 0;
             height: 4px;
             background: linear-gradient(90deg, transparent, var(--bamboo-green), var(--wood-dark), var(--bamboo-green), transparent);
+            animation: gradientFlow 8s ease-in-out infinite;
+        }
+
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(166, 192, 128, 0.05) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
         }
 
         h2 {
@@ -296,6 +321,76 @@
             border-bottom: 2px solid var(--zen-gray);
             font-weight: 400;
             position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1;
+        }
+
+        h2:hover {
+            color: var(--bamboo-green);
+        }
+
+        .section-toggle {
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 50%;
+            background: rgba(166, 192, 128, 0.1);
+        }
+
+        .section-toggle:hover {
+            background: rgba(166, 192, 128, 0.2);
+            transform: scale(1.2);
+        }
+
+        .section-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 卡片样式增强 */
+        .feature-card, .fitness-item, .hobby-item, .hexagram, .quote {
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .feature-card::before, .fitness-item::before, .hobby-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--bamboo-green), var(--wood-medium));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover::before, .fitness-item:hover::before, .hobby-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* 增强文字效果 */
+        p, li {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 添加页面元素活力 */
+        .hexagram {
+            transition: all 0.5s ease;
+        }
+
+        .hexagram:hover {
+            transform: translateY(-10px) rotate(5deg);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.1);
         }
 
         h2::after {
@@ -840,47 +935,208 @@
             opacity: 0.7;
         }
 
-        /* 响应式设计 */
+        /* 响应式设计 - 手机端优化 */
+        /* 通用移动设备优化 */
+        @media (max-width: 1024px) {
+            .container { padding: 0 15px; }
+            h1 { font-size: 3em; }
+            section { padding: 40px 25px; }
+        }
+
+        /* 平板设备优化 */
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5em;
+            /* 基础样式调整 */
+            h1 { font-size: 2.5em; letter-spacing: 0.1em; }
+            h2 { font-size: 1.8em; }
+            h3 { font-size: 1.5em; }
+            .subtitle { font-size: 1.2em; }
+            .motto { font-size: 1.1em; padding: 15px; }
+            
+            /* 布局调整 */
+            header { padding: 60px 15px 40px; }
+            section { padding: 30px 20px; margin-bottom: 60px; }
+            
+            /* 导航栏优化 */
+            nav ul { gap: 10px; padding: 0 10px; }
+            nav ul li a { padding: 15px 12px; font-size: 1em; }
+            
+            /* 时间线优化 */
+            .timeline::after { left: 31px; }
+            .timeline-item { 
+                width: 100%; 
+                padding-left: 70px; 
+                padding-right: 15px;
             }
-
-            h2 {
-                font-size: 1.8em;
-            }
-
-            section {
-                padding: 30px;
-            }
-
-            .timeline::after {
-                left: 31px;
-            }
-
-            .timeline-item {
-                width: 100%;
-                padding-left: 70px;
-                padding-right: 25px;
-            }
-
-            .timeline-item.right {
-                left: 0;
-            }
-
+            .timeline-item.right { left: 0; }
+            .timeline-content { padding: 20px 15px; }
             .timeline-item.left .timeline-content::before,
             .timeline-item.right .timeline-content::before {
-                left: -10px;
+                left: -10px; 
                 transform: rotate(45deg);
             }
-
             .timeline-item.left .timeline-dot,
             .timeline-item.right .timeline-dot {
                 left: 18.5px;
             }
-
-            nav ul {
+            
+            /* 网格布局优化 */
+            .feature-cards,
+            .planning-grid {
+                grid-template-columns: 1fr;
                 gap: 20px;
+            }
+        }
+
+        /* 手机设备优化 */
+        @media (max-width: 480px) {
+            /* 基础样式调整 */
+            h1 { font-size: 2em; margin-bottom: 10px; }
+            h2 { font-size: 1.5em; padding-bottom: 15px; }
+            h3 { font-size: 1.3em; padding-left: 15px; }
+            p { font-size: 1em; }
+            .subtitle { font-size: 1.1em; margin-bottom: 25px; }
+            
+            /* 页眉优化 */
+            header { padding: 40px 15px 30px; min-height: 80vh; }
+            .avatar-container { width: 150px; height: 150px; }
+            .avatar { width: 130px; height: 130px; }
+            .avatar-inner { font-size: 2em; }
+            
+            /* 导航栏 - 显示汉堡菜单 */
+            .menu-toggle {
+                display: flex;
+            }
+            
+            /* 导航菜单 - 手机端默认隐藏 */
+            .nav-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background-color: rgba(107, 79, 58, 0.99);
+                padding: 0;
+                max-height: 0;
+                overflow: hidden;
+                box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+            }
+            
+            /* 导航菜单打开状态 */
+            .nav-menu.active {
+                max-height: 500px;
+                padding: 10px 0;
+            }
+            
+            /* 导航项 - 手机端样式 */
+            .nav-menu li {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .nav-menu li a {
+                padding: 15px 20px;
+                font-size: 1em;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            
+            .nav-menu li:last-child a {
+                border-bottom: none;
+            }
+            
+            /* 内容区优化 */
+            section { 
+                padding: 25px 15px;
+                margin-bottom: 40px;
+                border-radius: 8px;
+            }
+            section h2 { margin-bottom: 20px; }
+            section h3::before { height: 20px; }
+            
+            /* 时间线优化 */
+            .timeline-item { padding-left: 60px; padding-right: 10px; }
+            .timeline-content { padding: 15px; }
+            .timeline-title { font-size: 1.2em; }
+            
+            /* 卡片和网格优化 */
+            .feature-card,
+            .fitness-item,
+            .hobby-item {
+                padding: 20px 15px;
+            }
+            .hexagrams {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            .hexagram {
+                padding: 15px 10px;
+            }
+            .hexagram-symbol { font-size: 2em; }
+            
+            /* 名言区域优化 */
+            .quotes-section { padding: 50px 20px; }
+            .quote { padding: 20px 15px; }
+            .quote-text { font-size: 1.1em; }
+            
+            /* 页脚优化 */
+            footer { padding: 40px 15px; }
+            .social-links { gap: 15px; }
+        }
+
+        /* 小屏幕手机优化 */
+        @media (max-width: 360px) {
+            /* 紧凑布局 */
+            h1 { font-size: 1.8em; }
+            h2 { font-size: 1.3em; }
+            section { padding: 20px 12px; }
+            
+            /* 导航栏更紧凑 */
+            nav ul { flex-direction: column; align-items: center; }
+            nav ul li a { 
+                padding: 10px 15px; 
+                min-width: 200px; 
+            }
+            
+            /* 六边形网格改为单列 */
+            .hexagrams { grid-template-columns: 1fr; }
+        }
+
+        /* 触摸设备优化 */
+        @media (hover: none) {
+            /* 移除悬停效果，改用点击效果 */
+            .feature-card:hover,
+            .timeline-content:hover,
+            .fitness-item:hover,
+            .planning-card:hover,
+            .hobby-item:hover,
+            .hexagram:hover {
+                transform: none;
+                box-shadow: none;
+            }
+            
+            /* 增加触摸反馈 */
+            a,
+            .avatar,
+            .feature-card,
+            .timeline-content,
+            .fitness-item,
+            .planning-card,
+            .hobby-item,
+            .hexagram,
+            .quote {
+                transition: all 0.1s ease;
+            }
+            
+            a:active,
+            .avatar:active,
+            .feature-card:active,
+            .timeline-content:active,
+            .fitness-item:active,
+            .planning-card:active,
+            .hobby-item:active,
+            .hexagram:active,
+            .quote:active {
+                transform: scale(0.98);
+                opacity: 0.9;
             }
         }
 
@@ -1076,20 +1332,64 @@
             transition: all 0.3s ease;
         }
         
-        nav ul {
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* 汉堡菜单按钮 - 默认隐藏 */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .menu-toggle .bar {
+            width: 25px;
+            height: 3px;
+            background-color: var(--wood-light);
+            margin: 2px 0;
+            transition: all 0.3s ease;
+        }
+        
+        /* 菜单打开时的汉堡动画 */
+        .menu-toggle.active .bar:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 5px);
+        }
+        
+        .menu-toggle.active .bar:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .menu-toggle.active .bar:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -5px);
+        }
+        
+        /* 导航菜单 */
+        .nav-menu {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
             list-style: none;
             margin: 0;
             padding: 0;
+            transition: all 0.3s ease;
         }
         
-        nav ul li {
+        .nav-menu li {
             position: relative;
         }
         
-        nav ul li a {
+        .nav-menu li a {
             display: block;
             padding: 18px 20px;
             color: var(--wood-light);
@@ -1100,7 +1400,7 @@
             overflow: hidden;
         }
         
-        nav ul li a::after {
+        .nav-menu li a::after {
             content: '';
             position: absolute;
             bottom: 0;
@@ -1111,12 +1411,12 @@
             transition: all 0.3s ease;
         }
         
-        nav ul li a:hover {
+        .nav-menu li a:hover {
             color: white;
             background-color: rgba(255, 255, 255, 0.1);
         }
         
-        nav ul li a:hover::after {
+        .nav-menu li a:hover::after {
             width: 100%;
             left: 0;
         }
@@ -2114,10 +2414,217 @@
             });
         }
         
+        // 汉堡菜单交互逻辑
+        function setupMobileMenu() {
+            const menuToggle = document.getElementById('menuToggle');
+            const navMenu = document.getElementById('navMenu');
+            
+            if (menuToggle && navMenu) {
+                // 点击汉堡按钮切换菜单
+                menuToggle.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                    
+                    // 防止点击汉堡菜单时页面滚动
+                    event.stopPropagation();
+                });
+                
+                // 点击导航链接后关闭菜单
+                const navLinks = navMenu.querySelectorAll('a');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        menuToggle.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    });
+                });
+                
+                // 点击页面其他地方关闭菜单
+                document.addEventListener('click', function() {
+                    if (navMenu.classList.contains('active')) {
+                        menuToggle.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    }
+                });
+                
+                // 窗口大小改变时重置菜单状态
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 480) {
+                        menuToggle.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    }
+                });
+            }
+        }
+        
+        // 初始化内容区块可折叠功能
+        function initCollapsibleSections() {
+            const sections = document.querySelectorAll('section');
+            
+            sections.forEach(section => {
+                // 获取section的h2标题
+                const heading = section.querySelector('h2');
+                if (!heading) return;
+                
+                // 添加折叠图标
+                const toggleIcon = document.createElement('span');
+                toggleIcon.className = 'section-toggle';
+                toggleIcon.innerHTML = '▼';
+                toggleIcon.style.float = 'right';
+                toggleIcon.style.cursor = 'pointer';
+                toggleIcon.style.fontSize = '0.8em';
+                toggleIcon.style.transition = 'transform 0.3s ease';
+                toggleIcon.style.color = 'var(--bamboo-green)';
+                heading.appendChild(toggleIcon);
+                
+                // 获取section内容（除了h2）
+                const content = Array.from(section.children).filter(child => child !== heading);
+                const contentWrapper = document.createElement('div');
+                contentWrapper.className = 'section-content';
+                
+                // 将内容移动到wrapper中
+                content.forEach(child => {
+                    contentWrapper.appendChild(child);
+                });
+                
+                section.appendChild(contentWrapper);
+                
+                // 添加折叠/展开动画
+                contentWrapper.style.maxHeight = contentWrapper.scrollHeight + 'px';
+                contentWrapper.style.overflow = 'hidden';
+                contentWrapper.style.transition = 'max-height 0.5s ease, opacity 0.3s ease';
+                
+                // 添加点击事件
+                heading.addEventListener('click', () => {
+                    const isExpanded = !contentWrapper.style.maxHeight || contentWrapper.style.maxHeight !== '0px';
+                    
+                    if (isExpanded) {
+                        // 折叠
+                        contentWrapper.style.maxHeight = '0px';
+                        contentWrapper.style.opacity = '0';
+                        toggleIcon.style.transform = 'rotate(-90deg)';
+                        section.classList.add('collapsed');
+                    } else {
+                        // 展开
+                        contentWrapper.style.maxHeight = contentWrapper.scrollHeight + 'px';
+                        contentWrapper.style.opacity = '1';
+                        toggleIcon.style.transform = 'rotate(0)';
+                        section.classList.remove('collapsed');
+                        
+                        // 确保高度计算正确
+                        setTimeout(() => {
+                            contentWrapper.style.maxHeight = '10000px'; // 一个足够大的值
+                        }, 500);
+                    }
+                });
+                
+                // 为section添加悬停效果增强
+                section.addEventListener('mouseenter', () => {
+                    section.style.transform = 'translateY(-5px) scale(1.01)';
+                    section.style.boxShadow = '0 15px 30px rgba(0,0,0,0.1)';
+                });
+                
+                section.addEventListener('mouseleave', () => {
+                    if (!section.classList.contains('collapsed')) {
+                        section.style.transform = 'translateY(0) scale(1)';
+                        section.style.boxShadow = '0 6px 30px rgba(0,0,0,0.05)';
+                    }
+                });
+            });
+        }
+        
+        // 为卡片添加翻转动画效果
+        function addCardFlipEffects() {
+            const cards = document.querySelectorAll('.feature-card, .fitness-item, .hobby-item');
+            
+            cards.forEach(card => {
+                // 添加更多动态效果
+                card.addEventListener('mouseenter', function() {
+                    this.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    this.style.transform = 'translateY(-8px) rotate(1deg) scale(1.03)';
+                    this.style.boxShadow = '0 15px 30px rgba(0,0,0,0.1)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transition = 'all 0.3s ease';
+                    this.style.transform = 'translateY(0) rotate(0) scale(1)';
+                    this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.05)';
+                });
+                
+                // 添加点击效果
+                card.addEventListener('click', function() {
+                    this.style.transform = 'translateY(-8px) rotate(-1deg) scale(1.02)';
+                    setTimeout(() => {
+                        this.style.transform = 'translateY(-8px) rotate(1deg) scale(1.03)';
+                    }, 150);
+                });
+            });
+        }
+        
+        // 添加内容动态加载效果
+        function addContentRevealEffects() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            const revealElements = document.querySelectorAll('.feature-card, .fitness-item, .hexagram, .hobby-item, .quote');
+            revealElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'all 0.8s ease';
+                observer.observe(el);
+            });
+            
+            // 添加CSS规则
+            const style = document.createElement('style');
+            style.textContent = `
+                .revealed {
+                    opacity: 1 !important;
+                    transform: translateY(0) !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // 添加页面活力效果
+        function addVibrantEffects() {
+            // 添加随机浮动效果给卡片
+            const floatElements = document.querySelectorAll('.feature-card, .hexagram, .hobby-item');
+            floatElements.forEach((el, index) => {
+                el.style.animation = `floatRandom ${5 + index % 3}s ease-in-out infinite ${index * 0.2}s`;
+            });
+            
+            // 添加CSS动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes floatRandom {
+                    0%, 100% {
+                        transform: translateY(0) rotate(0);
+                    }
+                    25% {
+                        transform: translateY(-5px) rotate(0.5deg);
+                    }
+                    75% {
+                        transform: translateY(-3px) rotate(-0.5deg);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
         // 添加更多交互功能
         setTimeout(() => {
             addKeyboardNavigation();
             generateAdditionalContent();
+            setupMobileMenu(); // 初始化汉堡菜单功能
+            initCollapsibleSections(); // 初始化可折叠功能
+            addCardFlipEffects(); // 添加卡片翻转动画
+            addContentRevealEffects(); // 添加内容动态加载效果
+            addVibrantEffects(); // 添加页面活力效果
         }, 1000);
     </script>
 </head>
@@ -2143,7 +2650,14 @@
     <!-- 导航栏 -->
     <nav>
         <div class="container">
-            <ul>
+            <!-- 汉堡菜单按钮 -->
+            <div class="menu-toggle" id="menuToggle">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            <!-- 导航菜单 -->
+            <ul class="nav-menu" id="navMenu">
                 <li><a href="#about">个人简介</a></li>
                 <li><a href="#fitness">运动健身</a></li>
                 <li><a href="#yi-jing">易经智慧</a></li>
