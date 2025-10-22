@@ -1045,18 +1045,26 @@
             }
             
             // 生成AI对打的回复
-            function generateFightResponse(lastMessage, aiModel, opponentModel) {
-                const modelData = aiModelResponses[aiModel];
-                const opponentName = aiModels[opponentModel].name;
-                
-                // 针对对方观点的回应模板
-                const responseTemplates = [
-                    `我理解${opponentName}的观点，但我想补充一点...`,
-                    `${opponentName}提到的确实很重要，不过从另一个角度看...`,
-                    `关于这个问题，我有不同的看法。我认为...`,
-                    `这是个很好的问题！根据我的分析...`,
-                    `我同意部分观点，但还需要考虑...`
-                ];
+                function generateFightResponse(lastMessage, aiModel, opponentModel) {
+                    const modelData = aiModelResponses[aiModel];
+                    // 特殊处理用户作为对手的情况
+                    const isUserOpponent = opponentModel === 'user';
+                    const opponentName = isUserOpponent ? '你' : aiModels[opponentModel].name;
+                    
+                    // 针对对方观点的回应模板
+                    const responseTemplates = isUserOpponent ? [
+                        `你提出了一个很好的观点，我认为...`,
+                        `感谢你的问题！从专业角度来看...`,
+                        `你的看法很有见地，让我补充一些信息...`,
+                        `这是个很有意思的问题！根据我的理解...`,
+                        `非常赞同你的观点，同时我想补充...`
+                    ] : [
+                        `我理解${opponentName}的观点，但我想补充一点...`,
+                        `${opponentName}提到的确实很重要，不过从另一个角度看...`,
+                        `关于这个问题，我有不同的看法。我认为...`,
+                        `这是个很好的观点！根据我的分析...`,
+                        `我同意部分观点，但还需要考虑...`
+                    ];
                 
                 // 从模板中随机选择
                 const templateIndex = Math.floor(Math.random() * responseTemplates.length);
@@ -1098,52 +1106,52 @@
             }
             
             // 添加消息到聊天界面
-            function addMessage(sender, message, aiModel = null) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'flex gap-3 animate-fade-in';
-                
-                if (sender === 'user') {
-                    messageDiv.className = 'flex gap-3 justify-end animate-fade-in';
-                    messageDiv.innerHTML = `
-                        <div class="bg-gradient-to-r from-primary/80 to-secondary/80 rounded-2xl rounded-tr-none p-4 max-w-[85%] backdrop-blur-sm">
-                            <p class="text-white">${message}</p>
-                            <p class="text-xs text-gray-200/70 mt-2">刚刚</p>
-                        </div>
-                        <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
-                            <i class="fa fa-user text-white text-sm"></i>
-                        </div>
-                    `;
-                } else if (sender === 'ai1') {
-                    const modelConfig = aiModel ? aiModels[aiModel] : aiModels[aiModel1.value];
-                    messageDiv.innerHTML = `
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-r ${modelConfig.color} flex items-center justify-center flex-shrink-0">
-                            <i class="fa ${modelConfig.icon} text-white text-sm"></i>
-                        </div>
-                        <div class="bg-white/10 rounded-2xl rounded-tl-none p-4 max-w-[85%] backdrop-blur-sm">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-xs font-semibold text-gray-300">${modelConfig.name}</span>
-                                <span class="text-xs text-gray-500">AI-1</span>
+                function addMessage(sender, message, aiModel = null) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'flex gap-3 animate-fade-in';
+                    
+                    if (sender === 'user') {
+                        messageDiv.className = 'flex gap-3 justify-end animate-fade-in';
+                        messageDiv.innerHTML = `
+                            <div class="bg-gradient-to-r from-primary/80 to-secondary/80 rounded-2xl rounded-tr-none p-4 max-w-[85%] backdrop-blur-sm">
+                                <p class="text-white">${message}</p>
+                                <p class="text-xs text-gray-200/70 mt-2">刚刚</p>
                             </div>
-                            <p class="text-gray-200 typing" id="ai-typing">${message}</p>
-                            <p class="text-xs text-gray-400 mt-2">刚刚</p>
-                        </div>
-                    `;
-                } else if (sender === 'ai2') {
-                    const modelConfig = aiModel ? aiModels[aiModel] : aiModels[aiModel2.value];
-                    messageDiv.innerHTML = `
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-r ${modelConfig.color} flex items-center justify-center flex-shrink-0">
-                            <i class="fa ${modelConfig.icon} text-white text-sm"></i>
-                        </div>
-                        <div class="bg-white/10 rounded-2xl rounded-tl-none p-4 max-w-[85%] backdrop-blur-sm">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-xs font-semibold text-gray-300">${modelConfig.name}</span>
-                                <span class="text-xs text-gray-500">AI-2</span>
+                            <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-user text-white text-sm"></i>
                             </div>
-                            <p class="text-gray-200 typing" id="ai-typing">${message}</p>
-                            <p class="text-xs text-gray-400 mt-2">刚刚</p>
-                        </div>
-                    `;
-                } else { // 默认AI回复
+                        `;
+                    } else if (sender === 'ai1') {
+                        const modelConfig = aiModel ? aiModels[aiModel] : aiModels[aiModel1.value];
+                        messageDiv.innerHTML = `
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-r ${modelConfig.color} flex items-center justify-center flex-shrink-0">
+                                <i class="fa ${modelConfig.icon} text-white text-sm"></i>
+                            </div>
+                            <div class="bg-white/10 rounded-2xl rounded-tl-none p-4 max-w-[85%] backdrop-blur-sm">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-xs font-semibold text-gray-300">${modelConfig.name}</span>
+                                    <span class="text-xs text-gray-500">AI-1</span>
+                                </div>
+                                <p class="text-gray-200 typing" id="ai-typing">${message}</p>
+                                <p class="text-xs text-gray-400 mt-2">刚刚</p>
+                            </div>
+                        `;
+                    } else if (sender === 'ai2') {
+                        const modelConfig = aiModel ? aiModels[aiModel] : aiModels[aiModel2.value];
+                        messageDiv.innerHTML = `
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-r ${modelConfig.color} flex items-center justify-center flex-shrink-0">
+                                <i class="fa ${modelConfig.icon} text-white text-sm"></i>
+                            </div>
+                            <div class="bg-white/10 rounded-2xl rounded-tl-none p-4 max-w-[85%] backdrop-blur-sm">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-xs font-semibold text-gray-300">${modelConfig.name}</span>
+                                    <span class="text-xs text-gray-500">AI-2</span>
+                                </div>
+                                <p class="text-gray-200 typing" id="ai-typing">${message}</p>
+                                <p class="text-xs text-gray-400 mt-2">刚刚</p>
+                            </div>
+                        `;
+                    } else { // 默认AI回复
                     messageDiv.innerHTML = `
                         <div class="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center flex-shrink-0">
                             <i class="fa fa-robot text-white text-sm"></i>
@@ -1182,21 +1190,30 @@
                                 typingElement.classList.remove('typing');
                                 
                                 // 如果是AI对打模式，自动触发下一个AI回复
+                                // 但只有在用户没有发送新消息的情况下才继续自动对话
                                 if (isAIFightActive) {
-                                    if (sender === 'ai1') {
-                                        lastMessage = fullText;
-                                        setTimeout(() => {
-                                            const ai2Response = generateFightResponse(lastMessage, aiModel2.value, aiModel1.value);
-                                            addMessage('ai2', ai2Response);
-                                            currentSpeaker = 'ai2';
-                                        }, 2000 + Math.random() * 1000); // 随机延迟增加真实感
-                                    } else if (sender === 'ai2') {
-                                        lastMessage = fullText;
-                                        setTimeout(() => {
-                                            const ai1Response = generateFightResponse(lastMessage, aiModel1.value, aiModel2.value);
-                                            addMessage('ai1', ai1Response);
-                                            currentSpeaker = 'ai1';
-                                        }, 2000 + Math.random() * 1000);
+                                    // 检查最近的消息是否来自用户
+                                    const messages = chatMessages.querySelectorAll('.animate-fade-in');
+                                    const lastMessageElement = messages[messages.length - 1];
+                                    const isLastMessageFromUser = lastMessageElement.classList.contains('justify-end');
+                                    
+                                    // 如果最后一条消息不是来自用户，则继续AI自动对话
+                                    if (!isLastMessageFromUser) {
+                                        if (sender === 'ai1') {
+                                            lastMessage = fullText;
+                                            setTimeout(() => {
+                                                const ai2Response = generateFightResponse(lastMessage, aiModel2.value, aiModel1.value);
+                                                addMessage('ai2', ai2Response);
+                                                currentSpeaker = 'ai2';
+                                            }, 2000 + Math.random() * 1000); // 随机延迟增加真实感
+                                        } else if (sender === 'ai2') {
+                                            lastMessage = fullText;
+                                            setTimeout(() => {
+                                                const ai1Response = generateFightResponse(lastMessage, aiModel1.value, aiModel2.value);
+                                                addMessage('ai1', ai1Response);
+                                                currentSpeaker = 'ai1';
+                                            }, 2000 + Math.random() * 1000);
+                                        }
                                     }
                                 }
                             }
@@ -1206,32 +1223,54 @@
             }
             
             // 发送消息
-            function sendMessage() {
-                const message = chatInput.value.trim();
-                if (message) {
-                    // 停止AI对打模式（如果正在运行）
-                    if (isAIFightActive) {
-                        stopAIFight();
+                function sendMessage() {
+                    const message = chatInput.value.trim();
+                    if (message) {
+                        // 添加用户消息
+                        addMessage('user', message);
+                        chatInput.value = '';
+                        
+                        // 记录到对话历史
+                        conversationHistory.push(message);
+                        // 限制历史长度
+                        if (conversationHistory.length > 3) {
+                            conversationHistory.shift();
+                        }
+                        
+                        // 根据当前模式决定如何回复
+                        if (isAIFightActive) {
+                            // AI对打模式：用户参与后，让两个AI都有机会回应
+                            setTimeout(() => {
+                                // 首先让当前应该发言的AI回应
+                                if (currentSpeaker === 'ai1') {
+                                    const ai1Response = generateFightResponse(message, aiModel1.value, 'user');
+                                    addMessage('ai1', ai1Response);
+                                    // 然后让另一个AI回应第一个AI
+                                    setTimeout(() => {
+                                        const ai2Response = generateFightResponse(ai1Response, aiModel2.value, aiModel1.value);
+                                        addMessage('ai2', ai2Response);
+                                        currentSpeaker = 'ai2';
+                                    }, 2000 + Math.random() * 1000);
+                                } else {
+                                    const ai2Response = generateFightResponse(message, aiModel2.value, 'user');
+                                    addMessage('ai2', ai2Response);
+                                    // 然后让另一个AI回应
+                                    setTimeout(() => {
+                                        const ai1Response = generateFightResponse(ai2Response, aiModel1.value, aiModel2.value);
+                                        addMessage('ai1', ai1Response);
+                                        currentSpeaker = 'ai1';
+                                    }, 2000 + Math.random() * 1000);
+                                }
+                            }, 800);
+                        } else {
+                            // 常规模式：只有一个AI回应
+                            setTimeout(() => {
+                                const aiResponse = generateAIResponse(message, aiModel1.value);
+                                addMessage('ai1', aiResponse);
+                            }, 800);
+                        }
                     }
-                    
-                    // 添加用户消息
-                    addMessage('user', message);
-                    chatInput.value = '';
-                    
-                    // 记录到对话历史
-                    conversationHistory.push(message);
-                    // 限制历史长度
-                    if (conversationHistory.length > 3) {
-                        conversationHistory.shift();
-                    }
-                    
-                    // 模拟AI思考延迟
-                    setTimeout(() => {
-                        const aiResponse = generateAIResponse(message, aiModel1.value);
-                        addMessage('ai1', aiResponse);
-                    }, 800);
                 }
-            }
             
             // 清空聊天
             function clearChat() {
@@ -1287,51 +1326,51 @@
             }
             
             // 开始AI对打
-            function startAIFight() {
-                if (isAIFightActive) {
-                    stopAIFight();
-                    return;
+                function startAIFight() {
+                    if (isAIFightActive) {
+                        stopAIFight();
+                        return;
+                    }
+                    
+                    isAIFightActive = true;
+                    startAIFightButton.innerHTML = '<i class="fa fa-stop"></i> 停止对打';
+                    startAIFightButton.classList.remove('from-green-500/70', 'to-emerald-500/70', 'hover:from-green-500', 'hover:to-emerald-500');
+                    startAIFightButton.classList.add('from-red-500/70', 'to-rose-500/70', 'hover:from-red-500', 'hover:to-rose-500');
+                    
+                    // 保持用户输入区域可见，允许用户参与对话
+                    userInputContainer.style.display = 'block';
+                    
+                    // 清除现有的建议按钮
+                    const suggestionContainer = chatMessages.querySelector('.flex.justify-start.flex-wrap');
+                    if (suggestionContainer) {
+                        suggestionContainer.remove();
+                    }
+                    
+                    // 重置对话历史
+                    conversationHistory = [];
+                    
+                    // 选择一个随机主题开始对话
+                    const randomTopicIndex = Math.floor(Math.random() * aiFightTopics.length);
+                    const selectedTopic = aiFightTopics[randomTopicIndex];
+                    conversationHistory.push(selectedTopic);
+                    
+                    // 添加系统提示消息
+                    const systemMessageDiv = document.createElement('div');
+                    systemMessageDiv.className = 'text-center my-4 animate-fade-in';
+                    systemMessageDiv.innerHTML = `
+                        <span class="inline-block bg-white/5 px-4 py-1 rounded-full text-xs text-gray-300">
+                            AI对打已开始 - 主题: ${selectedTopic} (你可以随时参与对话)
+                        </span>
+                    `;
+                    chatMessages.appendChild(systemMessageDiv);
+                    
+                    // AI1 开始对话
+                    setTimeout(() => {
+                        const openingMessage = `${aiModels[aiModel1.value].name}: 关于${selectedTopic}，我想分享一下我的观点。作为${aiModels[aiModel1.value].name}，我认为这是AI发展的重要方向...`;
+                        addMessage('ai1', openingMessage);
+                        currentSpeaker = 'ai1';
+                    }, 1000);
                 }
-                
-                isAIFightActive = true;
-                startAIFightButton.innerHTML = '<i class="fa fa-stop"></i> 停止对打';
-                startAIFightButton.classList.remove('from-green-500/70', 'to-emerald-500/70', 'hover:from-green-500', 'hover:to-emerald-500');
-                startAIFightButton.classList.add('from-red-500/70', 'to-rose-500/70', 'hover:from-red-500', 'hover:to-rose-500');
-                
-                // 隐藏用户输入区域
-                userInputContainer.style.display = 'none';
-                
-                // 清除现有的建议按钮
-                const suggestionContainer = chatMessages.querySelector('.flex.justify-start.flex-wrap');
-                if (suggestionContainer) {
-                    suggestionContainer.remove();
-                }
-                
-                // 重置对话历史
-                conversationHistory = [];
-                
-                // 选择一个随机主题开始对话
-                const randomTopicIndex = Math.floor(Math.random() * aiFightTopics.length);
-                const selectedTopic = aiFightTopics[randomTopicIndex];
-                conversationHistory.push(selectedTopic);
-                
-                // 添加系统提示消息
-                const systemMessageDiv = document.createElement('div');
-                systemMessageDiv.className = 'text-center my-4 animate-fade-in';
-                systemMessageDiv.innerHTML = `
-                    <span class="inline-block bg-white/5 px-4 py-1 rounded-full text-xs text-gray-300">
-                        AI对打已开始 - 主题: ${selectedTopic}
-                    </span>
-                `;
-                chatMessages.appendChild(systemMessageDiv);
-                
-                // AI1 开始对话
-                setTimeout(() => {
-                    const openingMessage = `${aiModels[aiModel1.value].name}: 关于${selectedTopic}，我想分享一下我的观点。作为${aiModels[aiModel1.value].name}，我认为这是AI发展的重要方向...`;
-                    addMessage('ai1', openingMessage);
-                    currentSpeaker = 'ai1';
-                }, 1000);
-            }
             
             // 停止AI对打
             function stopAIFight() {
