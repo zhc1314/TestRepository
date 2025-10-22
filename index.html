@@ -1000,109 +1000,92 @@
                 }
             };
             
-            // 生成随机回复
-            function generateAIResponse(userMessage, aiModel = 'chatgpt') {
-                // 转换为小写进行匹配
-                const lowerMessage = userMessage.toLowerCase();
-                
-                // 查找匹配的回复
-                for (const [key, responses] of Object.entries(aiResponses)) {
-                    if (lowerMessage.includes(key.toLowerCase())) {
-                        const randomIndex = Math.floor(Math.random() * responses.length);
-                        return responses[randomIndex];
-                    }
-                }
-                
-                // 根据AI模型的风格生成回复
-                const modelData = aiModelResponses[aiModel];
-                if (modelData && modelData.style.length > 0) {
-                    const styleIndex = Math.floor(Math.random() * modelData.style.length);
-                    const responsePrefix = modelData.style[styleIndex];
+            // 调用大语言模型API的函数
+            async function callLLMAPI(prompt, aiModel = 'chatgpt', systemPrompt = '') {
+                try {
+                    // 由于这是示例，我们将使用模拟API调用
+                    // 在实际生产环境中，这里应该替换为真实的API调用代码
+                    console.log(`Calling LLM API with model: ${aiModel}`);
+                    console.log(`System prompt: ${systemPrompt}`);
+                    console.log(`User prompt: ${prompt}`);
                     
-                    // 基于对话历史生成相关回复
-                    let responseContent = "";
-                    if (conversationHistory.length > 0) {
-                        const lastTopic = conversationHistory[conversationHistory.length - 1];
-                        responseContent = `关于${lastTopic || '这个话题'}，${responsePrefix}${userMessage}`;
-                    } else {
-                        responseContent = `${responsePrefix}${userMessage}`;
-                    }
+                    // 模拟API调用延迟
+                    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1500));
                     
-                    return responseContent;
+                    // 模拟API响应（在实际应用中，这里应该是API返回的真实结果）
+                    const mockResponses = [
+                        `根据${aiModel}的分析，${prompt}是一个值得深入探讨的问题。从技术角度来看，我们可以考虑多种实现方案，包括但不限于算法优化、架构设计和性能调优。`,
+                        `我通过${aiModel}分析了你的问题。${prompt}涉及多个技术领域，需要综合考虑各种因素。关键在于理解问题的本质，然后选择合适的解决方案。`,
+                        `${aiModel}为你提供的见解：关于${prompt}，最新的研究表明，我们可以采用更加高效的方法来解决这类问题。这不仅可以提高性能，还能降低资源消耗。`,
+                        `经过深入分析，${aiModel}认为${prompt}是当前技术发展的重要方向。通过创新的方法和工具，我们可以实现更加智能化和自动化的解决方案。`,
+                        `基于${aiModel}的内容分析，${prompt}涉及复杂的技术考量。建议从基础架构开始，逐步优化各个组件，最终实现整体解决方案的提升。`
+                    ];
+                    
+                    return mockResponses[Math.floor(Math.random() * mockResponses.length)];
+                } catch (error) {
+                    console.error('LLM API调用失败:', error);
+                    return '抱歉，我暂时无法处理这个请求。请稍后再试。';
                 }
+            }
+            
+            // 生成AI回复
+            async function generateAIResponse(userMessage, aiModel = 'chatgpt') {
+                // 为不同模型设置不同的系统提示
+                const systemPrompts = {
+                    'chatgpt': '你是一个智能助手，擅长深入分析问题并提供详细、准确的信息。',
+                    'gpt4': '你是一个高级智能助手，能够处理复杂问题并提供深入的分析和见解。',
+                    'claude': '你是一个谨慎、准确的助手，注重事实和细节。',
+                    'gemini': '你是一个创新型助手，善于将复杂问题简化并提供实用建议。',
+                    'llama': '你是一个全面的助手，能够从多角度分析问题并提供平衡的观点。',
+                    'mistral': '你是一个简洁高效的助手，能够直接提供有价值的信息。',
+                    'anthropic': '你是一个细致的助手，擅长深入研究问题并提供深入见解。',
+                    'bing': '你是一个信息导向的助手，快速提供最新、最相关的信息。'
+                };
                 
-                // 默认回复
-                const defaultResponses = [
-                    "感谢你的提问！我会尽力为你解答。",
-                    "这个问题很有趣，让我思考一下...",
-                    "我理解你的意思，根据我的了解...",
-                    "这是个好问题！根据信息，我认为...",
-                    "让我为你提供一些相关信息..."
-                ];
+                const systemPrompt = systemPrompts[aiModel] || '你是一个智能助手，能够回答各种问题。';
+                
+                // 调用大语言模型API获取回复
+                return await callLLMAPI(userMessage, aiModel, systemPrompt);
                 
                 const randomIndex = Math.floor(Math.random() * defaultResponses.length);
                 return defaultResponses[randomIndex] + " " + userMessage;
             }
             
             // 生成AI对打的回复
-                function generateFightResponse(lastMessage, aiModel, opponentModel) {
-                    const modelData = aiModelResponses[aiModel];
+                async function generateFightResponse(lastMessage, aiModel, opponentModel) {
                     // 特殊处理用户作为对手的情况
                     const isUserOpponent = opponentModel === 'user';
                     const opponentName = isUserOpponent ? '你' : aiModels[opponentModel].name;
                     
-                    // 针对对方观点的回应模板
-                    const responseTemplates = isUserOpponent ? [
-                        `你提出了一个很好的观点，我认为...`,
-                        `感谢你的问题！从专业角度来看...`,
-                        `你的看法很有见地，让我补充一些信息...`,
-                        `这是个很有意思的问题！根据我的理解...`,
-                        `非常赞同你的观点，同时我想补充...`
-                    ] : [
-                        `我理解${opponentName}的观点，但我想补充一点...`,
-                        `${opponentName}提到的确实很重要，不过从另一个角度看...`,
-                        `关于这个问题，我有不同的看法。我认为...`,
-                        `这是个很好的观点！根据我的分析...`,
-                        `我同意部分观点，但还需要考虑...`
-                    ];
-                
-                // 从模板中随机选择
-                const templateIndex = Math.floor(Math.random() * responseTemplates.length);
-                const template = responseTemplates[templateIndex];
-                
-                // 根据模型风格生成内容
-                if (modelData && modelData.style.length > 0) {
-                    const styleIndex = Math.floor(Math.random() * modelData.style.length);
-                    const modelStyle = modelData.style[styleIndex];
+                    // 为对打模式设置特定的系统提示
+                    const fightSystemPrompts = {
+                        'chatgpt': '你是一个辩论专家，能够对对手的观点进行深入分析并提出有力的反驳或补充观点。',
+                        'gpt4': '你是一个高级辩论专家，擅长从多角度分析问题并提供深刻的见解。',
+                        'claude': '你是一个严谨的辩论者，注重逻辑和事实，能够指出对手观点中的漏洞。',
+                        'gemini': '你是一个创新型辩论者，善于提出新颖的角度和解决方案。',
+                        'llama': '你是一个全面的辩论者，能够从开源社区的角度提供独特见解。',
+                        'mistral': '你是一个简洁高效的辩论者，能够直接指出问题核心并提供解决方案。',
+                        'anthropic': '你是一个细致的辩论者，擅长从安全和伦理角度分析问题。',
+                        'bing': '你是一个信息导向的辩论者，快速引用最新信息支持自己的论点。'
+                    };
                     
-                    // 根据对话历史生成更相关的内容
-                    const topic = conversationHistory.length > 0 ? conversationHistory[conversationHistory.length - 1] : 
-                                 aiFightTopics[Math.floor(Math.random() * aiFightTopics.length)];
-                    
-                    // 记录当前讨论的主题
-                    if (!conversationHistory.includes(topic)) {
-                        conversationHistory.push(topic);
-                        // 限制历史长度
-                        if (conversationHistory.length > 3) {
-                            conversationHistory.shift();
-                        }
+                    // 构建对话上下文
+                    let context = '';
+                    if (conversationHistory.length > 0) {
+                        context = conversationHistory.join('\n');
                     }
                     
-                    // 生成与主题相关的回复
-                    const responses = [
-                        `${template} ${modelStyle} ${topic}是当前AI领域的重要研究方向。`,
-                        `${template} 从${topic}的角度来看，我们需要考虑更多技术和伦理因素。`,
-                        `${template} ${modelStyle} 关于${topic}，最新的研究进展显示...`,
-                        `${template} 我认为在${topic}方面，我们应该采取更开放的态度。`,
-                        `${template} ${modelStyle} 对于${topic}，我的理解是...`
-                    ];
+                    // 构建对打提示
+                    const fightPrompt = isUserOpponent 
+                        ? `用户说: "${lastMessage}"
+作为${aiModels[aiModel].name}，请直接回应用户的观点，提供有深度的分析和见解。保持专业性的同时，展现出你的独特思考。`
+                        : `${opponentName}说: "${lastMessage}"
+作为${aiModels[aiModel].name}，请针对${opponentName}的观点进行回应。你可以同意、反驳或补充，但要展示出你的独特见解和专业知识。保持对话的连贯性，记住我们正在讨论的主题。`;
                     
-                    const responseIndex = Math.floor(Math.random() * responses.length);
-                    return responses[responseIndex];
-                }
-                
-                // 默认回复
-                return `${template} ${lastMessage}`;
+                    const systemPrompt = fightSystemPrompts[aiModel] || '你是一个辩论专家，能够对对手的观点进行分析并回应。';
+                    
+                    // 调用大语言模型API获取对打回复
+                    return await callLLMAPI(fightPrompt, aiModel, systemPrompt);
             }
             
             // 添加消息到聊天界面
@@ -1172,8 +1155,8 @@
                 chatMessages.appendChild(messageDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
                 
-                // 如果是AI消息，添加打字机效果
-                if (sender === 'ai1' || sender === 'ai2' || sender === 'ai') {
+                // 如果是AI消息，添加打字机效果（但不包括加载消息）
+                if ((sender === 'ai1' || sender === 'ai2' || sender === 'ai') && message !== '思考中...') {
                     const typingElement = messageDiv.querySelector('#ai-typing');
                     if (typingElement) {
                         const fullText = typingElement.textContent;
@@ -1201,15 +1184,25 @@
                                     if (!isLastMessageFromUser) {
                                         if (sender === 'ai1') {
                                             lastMessage = fullText;
-                                            setTimeout(() => {
-                                                const ai2Response = generateFightResponse(lastMessage, aiModel2.value, aiModel1.value);
+                                            setTimeout(async () => {
+                                                // 显示加载状态
+                                                const loadingMessage = addMessage('ai2', '思考中...');
+                                                // 获取AI2的回复
+                                                const ai2Response = await generateFightResponse(lastMessage, aiModel2.value, aiModel1.value);
+                                                // 移除加载消息并添加真实回复
+                                                loadingMessage.remove();
                                                 addMessage('ai2', ai2Response);
                                                 currentSpeaker = 'ai2';
                                             }, 2000 + Math.random() * 1000); // 随机延迟增加真实感
                                         } else if (sender === 'ai2') {
                                             lastMessage = fullText;
-                                            setTimeout(() => {
-                                                const ai1Response = generateFightResponse(lastMessage, aiModel1.value, aiModel2.value);
+                                            setTimeout(async () => {
+                                                // 显示加载状态
+                                                const loadingMessage = addMessage('ai1', '思考中...');
+                                                // 获取AI1的回复
+                                                const ai1Response = await generateFightResponse(lastMessage, aiModel1.value, aiModel2.value);
+                                                // 移除加载消息并添加真实回复
+                                                loadingMessage.remove();
                                                 addMessage('ai1', ai1Response);
                                                 currentSpeaker = 'ai1';
                                             }, 2000 + Math.random() * 1000);
@@ -1223,7 +1216,7 @@
             }
             
             // 发送消息
-                function sendMessage() {
+                async function sendMessage() {
                     const message = chatInput.value.trim();
                     if (message) {
                         // 添加用户消息
@@ -1240,23 +1233,43 @@
                         // 根据当前模式决定如何回复
                         if (isAIFightActive) {
                             // AI对打模式：用户参与后，让两个AI都有机会回应
-                            setTimeout(() => {
+                            setTimeout(async () => {
                                 // 首先让当前应该发言的AI回应
                                 if (currentSpeaker === 'ai1') {
-                                    const ai1Response = generateFightResponse(message, aiModel1.value, 'user');
+                                    // 显示加载状态
+                                    const loadingMessage = addMessage('ai1', '思考中...');
+                                    // 获取AI1的回复
+                                    const ai1Response = await generateFightResponse(message, aiModel1.value, 'user');
+                                    // 移除加载消息并添加真实回复
+                                    loadingMessage.remove();
                                     addMessage('ai1', ai1Response);
                                     // 然后让另一个AI回应第一个AI
-                                    setTimeout(() => {
-                                        const ai2Response = generateFightResponse(ai1Response, aiModel2.value, aiModel1.value);
+                                    setTimeout(async () => {
+                                        // 显示加载状态
+                                        const loadingMessage2 = addMessage('ai2', '思考中...');
+                                        // 获取AI2的回复
+                                        const ai2Response = await generateFightResponse(ai1Response, aiModel2.value, aiModel1.value);
+                                        // 移除加载消息并添加真实回复
+                                        loadingMessage2.remove();
                                         addMessage('ai2', ai2Response);
                                         currentSpeaker = 'ai2';
                                     }, 2000 + Math.random() * 1000);
                                 } else {
-                                    const ai2Response = generateFightResponse(message, aiModel2.value, 'user');
+                                    // 显示加载状态
+                                    const loadingMessage = addMessage('ai2', '思考中...');
+                                    // 获取AI2的回复
+                                    const ai2Response = await generateFightResponse(message, aiModel2.value, 'user');
+                                    // 移除加载消息并添加真实回复
+                                    loadingMessage.remove();
                                     addMessage('ai2', ai2Response);
                                     // 然后让另一个AI回应
-                                    setTimeout(() => {
-                                        const ai1Response = generateFightResponse(ai2Response, aiModel1.value, aiModel2.value);
+                                    setTimeout(async () => {
+                                        // 显示加载状态
+                                        const loadingMessage2 = addMessage('ai1', '思考中...');
+                                        // 获取AI1的回复
+                                        const ai1Response = await generateFightResponse(ai2Response, aiModel1.value, aiModel2.value);
+                                        // 移除加载消息并添加真实回复
+                                        loadingMessage2.remove();
                                         addMessage('ai1', ai1Response);
                                         currentSpeaker = 'ai1';
                                     }, 2000 + Math.random() * 1000);
@@ -1264,8 +1277,13 @@
                             }, 800);
                         } else {
                             // 常规模式：只有一个AI回应
-                            setTimeout(() => {
-                                const aiResponse = generateAIResponse(message, aiModel1.value);
+                            setTimeout(async () => {
+                                // 显示加载状态
+                                const loadingMessage = addMessage('ai1', '思考中...');
+                                // 获取AI回复
+                                const aiResponse = await generateAIResponse(message, aiModel1.value);
+                                // 移除加载消息并添加真实回复
+                                loadingMessage.remove();
                                 addMessage('ai1', aiResponse);
                             }, 800);
                         }
@@ -1326,7 +1344,7 @@
             }
             
             // 开始AI对打
-                function startAIFight() {
+                async function startAIFight() {
                     if (isAIFightActive) {
                         stopAIFight();
                         return;
@@ -1365,9 +1383,19 @@
                     chatMessages.appendChild(systemMessageDiv);
                     
                     // AI1 开始对话
-                    setTimeout(() => {
-                        const openingMessage = `${aiModels[aiModel1.value].name}: 关于${selectedTopic}，我想分享一下我的观点。作为${aiModels[aiModel1.value].name}，我认为这是AI发展的重要方向...`;
-                        addMessage('ai1', openingMessage);
+                    setTimeout(async () => {
+                        // 显示加载状态
+                        const loadingMessage = addMessage('ai1', '思考中...');
+                        
+                        // 构建开场提示
+                        const openingPrompt = `作为${aiModels[aiModel1.value].name}，请围绕"${selectedTopic}"开始一段对话。介绍你对这个主题的初步观点和看法，作为讨论的起点。`;
+                        
+                        // 调用大语言模型API获取开场回复
+                        const openingResponse = await callLLMAPI(openingPrompt, aiModel1.value, '你是一个辩论专家，能够对各种主题提供深入见解并开启有意义的讨论。');
+                        
+                        // 移除加载消息并添加真实回复
+                        loadingMessage.remove();
+                        addMessage('ai1', openingResponse);
                         currentSpeaker = 'ai1';
                     }, 1000);
                 }
