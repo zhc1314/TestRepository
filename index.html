@@ -1002,9 +1002,12 @@
             
             // 调用大语言模型API的函数
             async function callLLMAPI(prompt, aiModel = 'ep-20251015101857-wc8xz', systemPrompt = '') {
-                // 确保使用正确的模型名称，不允许使用'chatgpt'作为模型名
-                if (aiModel === 'chatgpt') {
+                // 确保使用正确的模型名称，不允许使用不存在的模型名
+                const invalidModels = ['chatgpt', 'gemini', 'gpt4', 'claude', 'llama', 'mistral', 'anthropic', 'bing'];
+                if (invalidModels.includes(aiModel)) {
+                    const originalModel = aiModel;
                     aiModel = 'ep-20251015101857-wc8xz'; // 使用有效的模型名称
+                    console.log(`模型名称'${originalModel}'不可用，已替换为有效的模型名称`);
                 }
                 try {
                     console.log('开始API调用，模型:', aiModel);
@@ -1095,9 +1098,6 @@
                 
                 // 调用大语言模型API获取回复
                 return await callLLMAPI(userMessage, aiModel, systemPrompt);
-                
-                const randomIndex = Math.floor(Math.random() * defaultResponses.length);
-                return defaultResponses[randomIndex] + " " + userMessage;
             }
             
             // 生成AI对打的回复
@@ -1516,6 +1516,5 @@
         }
     </script>
     <script src="test_fix.js"></script>
-    </script>
 </body>
 </html>
