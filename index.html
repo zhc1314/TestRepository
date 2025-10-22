@@ -176,6 +176,58 @@
             transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
+        /* 消息淡入动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* 打字机效果 */
+        .typing {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .typing::after {
+            content: '|';
+            position: absolute;
+            right: -8px;
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        /* 滚动条样式优化 */
+        #chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        #chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+        
+        #chat-messages::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
         /* 渐变背景动画 */
         body {
             background: linear-gradient(-45deg, #111827, #1F2937, #111827, #374151);
@@ -387,10 +439,87 @@
         </div>
     </section>
     
+    <!-- AI对话区域 -->
+    <section id="ai-chat" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(2rem,5vw,3rem)] font-bold mb-4 text-breath">AI 智能助手</h2>
+                <p class="text-gray-300 max-w-2xl mx-auto">与我们的AI助手交流，获取即时帮助和解答</p>
+            </div>
+            
+            <div class="max-w-3xl mx-auto bg-white/5 backdrop-blur-xl rounded-3xl p-4 md:p-6 border border-white/10 shadow-2xl reveal">
+                <!-- 聊天界面头部 -->
+                <div class="flex items-center justify-between mb-4 pb-4 border-b border-white/10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
+                            <i class="fa fa-robot text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">智能助手</h3>
+                            <p class="text-xs text-gray-400 flex items-center gap-1">
+                                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                                在线
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="clear-chat" class="p-2 rounded-full hover:bg-white/10 transition-colors" title="清空聊天">
+                            <i class="fa fa-trash text-gray-300"></i>
+                        </button>
+                        <button id="minimize-chat" class="p-2 rounded-full hover:bg-white/10 transition-colors" title="最小化">
+                            <i class="fa fa-window-minimize text-gray-300"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 聊天消息区域 -->
+                <div id="chat-messages" class="h-[400px] md:h-[500px] overflow-y-auto mb-4 space-y-4 pr-2">
+                    <!-- 系统欢迎消息 -->
+                    <div class="flex gap-3 animate-fade-in">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center flex-shrink-0">
+                            <i class="fa fa-robot text-white text-sm"></i>
+                        </div>
+                        <div class="bg-white/10 rounded-2xl rounded-tl-none p-4 max-w-[85%] backdrop-blur-sm">
+                            <p class="text-gray-200">你好！我是AI助手，很高兴为你提供帮助。请问有什么可以帮到你的吗？</p>
+                            <p class="text-xs text-gray-400 mt-2">刚刚</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 示例问题建议 -->
+                    <div class="flex justify-start flex-wrap gap-2 mb-2">
+                        <button class="suggestion-btn px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full text-sm text-gray-300 transition-colors">
+                            你能做什么？
+                        </button>
+                        <button class="suggestion-btn px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full text-sm text-gray-300 transition-colors">
+                            推荐一些功能
+                        </button>
+                        <button class="suggestion-btn px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full text-sm text-gray-300 transition-colors">
+                            如何使用这个页面？
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 输入区域 -->
+                <div class="relative">
+                    <div class="flex gap-2">
+                        <input type="text" id="chat-input" placeholder="输入你的问题..." 
+                               class="flex-1 bg-white/10 border border-white/20 rounded-full px-5 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 pr-12">
+                        <button id="send-message" class="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 flex items-center justify-center transition-all duration-300 transform hover:scale-105 btn-hover-effect">
+                            <i class="fa fa-paper-plane text-white"></i>
+                        </button>
+                    </div>
+                    <div class="absolute right-16 top-1/2 transform -translate-y-1/2 text-xs text-gray-400">
+                        <kbd class="px-2 py-1 bg-white/10 rounded">Enter</kbd> 发送
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
     <!-- 联系区域 -->
     <section id="contact" class="py-20 relative">
         <div class="container mx-auto px-6">
-            <div class="max-w-4xl mx-auto bg-white/5 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-white/10 shadow-2xl">
+            <div class="max-w-4xl mx-auto bg-white/5 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-white/10 shadow-2xl reveal">
                 <div class="text-center mb-10">
                     <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">联系我们</h2>
                     <p class="text-gray-300">有任何问题或建议，请随时联系我们</p>
@@ -593,6 +722,7 @@
             initMouseParticles();
             initRevealAnimation();
             initParallax();
+            initAIChat();
         });
         
         // 添加表单提交事件
@@ -758,6 +888,215 @@
                     const movementY = mouseY * 30;
                     element.style.transform = `translate(${movementX}px, ${movementY}px)`;
                 });
+            });
+        }
+        
+        // AI对话功能
+        function initAIChat() {
+            const chatMessages = document.getElementById('chat-messages');
+            const chatInput = document.getElementById('chat-input');
+            const sendButton = document.getElementById('send-message');
+            const clearButton = document.getElementById('clear-chat');
+            const minimizeButton = document.getElementById('minimize-chat');
+            const suggestionButtons = document.querySelectorAll('.suggestion-btn');
+            
+            // 模拟的AI回复数据
+            const aiResponses = {
+                "你好": ["你好！很高兴见到你！", "嗨！有什么可以帮到你的吗？"],
+                "你能做什么": ["我是一个AI助手，可以回答问题、提供信息、进行简单的对话交流。", "我可以帮助你了解更多关于这个页面的功能，或者回答你感兴趣的问题。"],
+                "推荐一些功能": ["这个页面提供了多种炫酷的动画效果，包括鼠标跟随粒子、霓虹辉光、3D悬停效果等。你可以尝试与页面交互，体验这些效果！", "你可以查看页面上的功能展示区，了解我们提供的主要特性，也可以通过联系表单与我们取得联系。"],
+                "如何使用这个页面": ["你可以通过顶部导航栏访问不同的页面区域，滚动浏览内容，与按钮和卡片进行交互体验动画效果，还可以使用右侧的AI助手进行对话。", "使用很简单！滚动页面浏览内容，点击按钮体验交互效果，或者在下方的输入框中输入问题与我交流。"],
+                "谢谢": ["不客气！很高兴能帮到你！", "随时为你服务！"],
+                "再见": ["再见！有需要随时回来找我！", "期待下次与你交流！"]
+            };
+            
+            // 生成随机回复
+            function generateAIResponse(userMessage) {
+                // 转换为小写进行匹配
+                const lowerMessage = userMessage.toLowerCase();
+                
+                // 查找匹配的回复
+                for (const [key, responses] of Object.entries(aiResponses)) {
+                    if (lowerMessage.includes(key.toLowerCase())) {
+                        const randomIndex = Math.floor(Math.random() * responses.length);
+                        return responses[randomIndex];
+                    }
+                }
+                
+                // 默认回复
+                const defaultResponses = [
+                    "感谢你的提问！我会尽力为你解答。",
+                    "这个问题很有趣，让我思考一下...",
+                    "我理解你的意思，根据我的了解...",
+                    "这是个好问题！根据信息，我认为...",
+                    "让我为你提供一些相关信息..."
+                ];
+                
+                const randomIndex = Math.floor(Math.random() * defaultResponses.length);
+                return defaultResponses[randomIndex] + " " + userMessage;
+            }
+            
+            // 添加消息到聊天界面
+            function addMessage(sender, message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'flex gap-3 animate-fade-in';
+                
+                if (sender === 'user') {
+                    messageDiv.className = 'flex gap-3 justify-end animate-fade-in';
+                    messageDiv.innerHTML = `
+                        <div class="bg-gradient-to-r from-primary/80 to-secondary/80 rounded-2xl rounded-tr-none p-4 max-w-[85%] backdrop-blur-sm">
+                            <p class="text-white">${message}</p>
+                            <p class="text-xs text-gray-200/70 mt-2">刚刚</p>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
+                            <i class="fa fa-user text-white text-sm"></i>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center flex-shrink-0">
+                            <i class="fa fa-robot text-white text-sm"></i>
+                        </div>
+                        <div class="bg-white/10 rounded-2xl rounded-tl-none p-4 max-w-[85%] backdrop-blur-sm">
+                            <p class="text-gray-200 typing" id="ai-typing">${message}</p>
+                            <p class="text-xs text-gray-400 mt-2">刚刚</p>
+                        </div>
+                    `;
+                }
+                
+                // 移除建议按钮
+                const suggestionContainer = chatMessages.querySelector('.flex.justify-start.flex-wrap');
+                if (suggestionContainer) {
+                    suggestionContainer.remove();
+                }
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // 如果是AI消息，添加打字机效果
+                if (sender === 'ai') {
+                    const typingElement = messageDiv.querySelector('#ai-typing');
+                    if (typingElement) {
+                        const fullText = typingElement.textContent;
+                        typingElement.textContent = '';
+                        
+                        let index = 0;
+                        const typeInterval = setInterval(() => {
+                            if (index < fullText.length) {
+                                typingElement.textContent += fullText[index];
+                                index++;
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                            } else {
+                                clearInterval(typeInterval);
+                                typingElement.classList.remove('typing');
+                            }
+                        }, 30); // 打字速度
+                    }
+                }
+            }
+            
+            // 发送消息
+            function sendMessage() {
+                const message = chatInput.value.trim();
+                if (message) {
+                    // 添加用户消息
+                    addMessage('user', message);
+                    chatInput.value = '';
+                    
+                    // 模拟AI思考延迟
+                    setTimeout(() => {
+                        const aiResponse = generateAIResponse(message);
+                        addMessage('ai', aiResponse);
+                    }, 800);
+                }
+            }
+            
+            // 清空聊天
+            function clearChat() {
+                // 保留欢迎消息
+                const welcomeMessage = chatMessages.querySelector('.animate-fade-in');
+                chatMessages.innerHTML = '';
+                
+                // 重新添加欢迎消息
+                welcomeMessage.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center flex-shrink-0">
+                        <i class="fa fa-robot text-white text-sm"></i>
+                    </div>
+                    <div class="bg-white/10 rounded-2xl rounded-tl-none p-4 max-w-[85%] backdrop-blur-sm">
+                        <p class="text-gray-200">你好！我是AI助手，很高兴为你提供帮助。请问有什么可以帮到你的吗？</p>
+                        <p class="text-xs text-gray-400 mt-2">刚刚</p>
+                    </div>
+                `;
+                chatMessages.appendChild(welcomeMessage);
+                
+                // 重新添加建议按钮
+                const suggestionsDiv = document.createElement('div');
+                suggestionsDiv.className = 'flex justify-start flex-wrap gap-2 mb-2';
+                suggestionsDiv.innerHTML = `
+                    <button class="suggestion-btn px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full text-sm text-gray-300 transition-colors">
+                        你能做什么？
+                    </button>
+                    <button class="suggestion-btn px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full text-sm text-gray-300 transition-colors">
+                        推荐一些功能
+                    </button>
+                    <button class="suggestion-btn px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full text-sm text-gray-300 transition-colors">
+                        如何使用这个页面？
+                    </button>
+                `;
+                chatMessages.appendChild(suggestionsDiv);
+                
+                // 重新绑定建议按钮事件
+                suggestionsDiv.querySelectorAll('.suggestion-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        chatInput.value = btn.textContent.trim();
+                        sendMessage();
+                    });
+                });
+            }
+            
+            // 最小化/最大化聊天
+            function toggleMinimize() {
+                const chatContainer = chatMessages;
+                const inputContainer = document.querySelector('#ai-chat .relative');
+                
+                if (chatContainer.style.height !== '100px') {
+                    chatContainer.style.height = '100px';
+                    inputContainer.style.display = 'none';
+                    minimizeButton.innerHTML = '<i class="fa fa-window-maximize text-gray-300"></i>';
+                } else {
+                    chatContainer.style.height = '500px';
+                    inputContainer.style.display = 'block';
+                    minimizeButton.innerHTML = '<i class="fa fa-window-minimize text-gray-300"></i>';
+                }
+            }
+            
+            // 事件监听
+            sendButton.addEventListener('click', sendMessage);
+            
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            clearButton.addEventListener('click', clearChat);
+            minimizeButton.addEventListener('click', toggleMinimize);
+            
+            // 建议按钮点击事件
+            suggestionButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    chatInput.value = btn.textContent.trim();
+                    sendMessage();
+                });
+            });
+            
+            // 添加输入框动画效果
+            chatInput.addEventListener('focus', () => {
+                chatInput.classList.add('ring-primary');
+            });
+            
+            chatInput.addEventListener('blur', () => {
+                chatInput.classList.remove('ring-primary');
             });
         }
     </script>
