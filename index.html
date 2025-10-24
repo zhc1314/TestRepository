@@ -11,20 +11,72 @@
     })();
   </script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>心情日记 - 记录美好每一天</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /* 允许文本选择 */
+    input, textarea, [contenteditable] {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
     }
 
     body {
-      font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+      font-family: 'Microsoft YaHei', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       overflow-x: hidden;
+      line-height: 1.6;
+      color: #333;
+      opacity: 0;
+      animation: fadeInBody 0.8s ease-out 0.2s forwards;
+    }
+
+    /* 动态背景渐变 */
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      z-index: -1;
+      opacity: 0.7;
+    }
+
+    @keyframes fadeInBody {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* 欢迎页样式 */
@@ -81,40 +133,128 @@
     }
 
     .welcome-content .subtitle {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       margin-bottom: 1rem;
       opacity: 0.9;
+      color: #4a5568;
+      font-weight: 500;
+      letter-spacing: -0.3px;
+      background: linear-gradient(135deg, #4a5568 0%, #718096 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .welcome-content .description {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       margin-bottom: 2rem;
-      opacity: 0.85;
+      opacity: 0.8;
       max-width: 600px;
       margin-left: auto;
       margin-right: auto;
-      line-height: 1.6;
+      line-height: 1.7;
+      color: #718096;
+      font-weight: 400;
+      text-shadow: 0 2px 10px rgba(113, 128, 150, 0.1);
+    }
+
+    /* 移动端字体优化 */
+    @media screen and (max-width: 768px) {
+      .welcome-content h1 {
+        font-size: 2.5rem;
+      }
+      
+      .welcome-content .subtitle {
+        font-size: 1.2rem;
+      }
+      
+      .welcome-content .description {
+        font-size: 1rem;
+        padding: 0 20px;
+      }
+      
+      .btn {
+        padding: 14px 35px;
+        font-size: 1rem;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .welcome-content h1 {
+        font-size: 2rem;
+      }
+      
+      .welcome-content .subtitle {
+        font-size: 1.1rem;
+      }
+      
+      .welcome-content .description {
+        font-size: 0.95rem;
+        padding: 0 15px;
+      }
+      
+      .btn {
+        padding: 12px 30px;
+        font-size: 0.95rem;
+      }
     }
 
     .btn {
-      padding: 15px 40px;
+      padding: 16px 42px;
       border: none;
       border-radius: 50px;
       font-size: 1.1rem;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 0.5px;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    /* 移动端触摸优化 */
+    @media (hover: none) and (pointer: coarse) {
+      .btn:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+      }
+      
+      .feature-card:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+      }
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transition: left 0.6s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
     }
 
     .btn-start {
-      background: white;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
       color: #667eea;
+      border: 2px solid rgba(102, 126, 234, 0.3);
+      box-shadow: 0 12px 35px rgba(102, 126, 234, 0.15);
     }
 
     .btn-start:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+      transform: translateY(-6px) scale(1.05);
+      box-shadow: 0 25px 60px rgba(102, 126, 234, 0.4);
+      background: linear-gradient(135deg, #ffffff 0%, #e8ecff 100%);
+      border-color: rgba(102, 126, 234, 0.5);
     }
 
     .btn-back {
@@ -137,6 +277,20 @@
       max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
+      width: 100%;
+    }
+
+    /* 响应式容器 */
+    @media screen and (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .container {
+        padding: 10px;
+      }
     }
 
     /* 登录注册页面 */
@@ -185,25 +339,66 @@
 
     .input-group input {
       width: 100%;
-      padding: 12px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
+      padding: 16px 20px;
+      border: 2px solid #e8ecf1;
+      border-radius: 12px;
       font-size: 16px;
-      transition: border-color 0.3s;
+      background: #ffffff;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
 
     .input-group input:focus {
       outline: none;
       border-color: #667eea;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .input-group input::placeholder {
+      color: #a0a4b8;
+      transition: color 0.3s ease;
+    }
+
+    .input-group input:focus::placeholder {
+      color: #c8cde5;
     }
 
     .btn-primary {
-      width: 85%;
-      background: #667eea;
+      width: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 14px;
-      border-radius: 8px;
+      padding: 16px 24px;
+      border-radius: 12px;
       font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.6s;
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
     }
 
     .auth-switch {
@@ -224,16 +419,35 @@
     }
 
     .header {
-      background: white;
-      border-radius: 16px;
-      padding: 20px 30px;
-      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 25px 35px;
+      margin-bottom: 25px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transition: left 0.6s;
+    }
+
+    .header:hover::before {
+      left: 100%;
     }
 
     .header h1 {
@@ -241,6 +455,41 @@
       color: #333;
       flex: 1;
       min-width: 200px;
+      font-weight: 600;
+    }
+
+    /* 响应式头部 */
+    @media screen and (max-width: 768px) {
+      .header {
+        padding: 15px 20px;
+        gap: 10px;
+      }
+      
+      .header h1 {
+        font-size: 20px;
+        min-width: 150px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .header {
+        padding: 12px 15px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      
+      .header h1 {
+        font-size: 18px;
+        min-width: auto;
+        width: 100%;
+        text-align: center;
+      }
+      
+      .user-info {
+        width: 100%;
+        justify-content: space-between;
+      }
     }
 
     .current-time {
@@ -277,39 +526,111 @@
     /* 功能卡片 */
     .features {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
     }
 
     .feature-card {
-      background: white;
-      border-radius: 16px;
-      padding: 30px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 35px 30px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transition: left 0.6s;
+    }
+
+    .feature-card:hover::before {
+      left: 100%;
     }
 
     .feature-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    /* 响应式功能卡片 */
+    @media screen and (max-width: 768px) {
+      .features {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+      
+      .feature-card {
+        padding: 25px;
+        border-radius: 16px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .features {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+      
+      .feature-card {
+        padding: 20px;
+        border-radius: 12px;
+      }
     }
 
     .feature-icon {
-      font-size: 48px;
-      margin-bottom: 15px;
+      font-size: 56px;
+      margin-bottom: 20px;
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 4px 8px rgba(102, 126, 234, 0.3));
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+      transform: scale(1.1) rotate(5deg);
+      filter: drop-shadow(0 6px 12px rgba(102, 126, 234, 0.4));
     }
 
     .feature-card h3 {
-      font-size: 20px;
-      color: #333;
-      margin-bottom: 10px;
+      font-size: 22px;
+      color: #2d3748;
+      margin-bottom: 12px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
     }
 
     .feature-card p {
-      color: #666;
-      line-height: 1.6;
+      color: #718096;
+      line-height: 1.7;
+      font-size: 15px;
+      font-weight: 400;
+      opacity: 0.9;
+    }
+
+    .feature-card:hover h3 {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     /* 模态框 */
@@ -322,13 +643,17 @@
       height: 100%;
       background: rgba(0, 0, 0, 0.5);
       z-index: 1000;
-      animation: fadeIn 0.3s;
+      opacity: 0;
+      transform: scale(0.8) translateY(-50px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .modal.active {
       display: flex;
       justify-content: center;
       align-items: center;
+      opacity: 1;
+      transform: scale(1) translateY(0);
     }
 
     .modal-content {
@@ -572,6 +897,12 @@
       opacity: 0.9;
     }
 
+    .stat-subtitle {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+
     canvas {
       width: 100%;
       height: 300px;
@@ -580,6 +911,86 @@
 
     .analysis-section {
       margin-top: 30px;
+    }
+
+    /* 报告页面记录展示样式 */
+    .records-section {
+      margin-top: 30px;
+      padding: 25px;
+      background: #f9f9f9;
+      border-radius: 12px;
+    }
+
+    .records-section h3 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .report-records-list {
+      display: grid;
+      gap: 15px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .record-item {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      border-left: 4px solid #667eea;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .record-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .record-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .record-item-type {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .record-item-date {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .record-item-mood {
+      font-size: 24px;
+      margin-right: 10px;
+    }
+
+    .record-item-content {
+      margin-top: 10px;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .record-item-audio {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .record-item-audio audio {
+      flex: 1;
+      height: 35px;
     }
 
     .analysis-card {
@@ -617,6 +1028,61 @@
       flex-shrink: 0;
     }
 
+    /* 心情分布图表样式 */
+    .mood-distribution {
+      margin: 20px 0;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .mood-distribution h4 {
+      margin-bottom: 15px;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .mood-bars {
+      display: flex;
+      height: 40px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .mood-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      min-width: 60px;
+    }
+
+    .mood-bar:hover {
+      transform: scale(1.05);
+      z-index: 2;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .mood-bar.happy {
+      background: linear-gradient(135deg, #4CAF50, #8BC34A);
+    }
+
+    .mood-bar.neutral {
+      background: linear-gradient(135deg, #FFC107, #FFEB3B);
+      color: #333;
+      text-shadow: none;
+    }
+
+    .mood-bar.sad {
+      background: linear-gradient(135deg, #f44336, #E91E63);
+    }
+
     /* 翻页效果 */
     .page-flip {
       perspective: 1500px;
@@ -631,6 +1097,8 @@
     .flip-card.flipped {
       transform: rotateY(180deg);
     }
+
+
 
     .flip-front, .flip-back {
       backface-visibility: hidden;
@@ -792,12 +1260,17 @@
       width: 100%;
       height: 100%;
       z-index: 1000;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
     .page.active { 
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      opacity: 1;
+      transform: translateY(0);
     }
     
     /* 特殊处理欢迎页 */
@@ -835,6 +1308,16 @@
     .message.error {
       background: #ffebee;
       color: #c62828;
+    }
+
+    /* 心情趋势图画布样式 */
+    #moodChart {
+      width: 100%;
+      height: 400px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border: 2px solid #e9ecef;
+      margin: 20px 0;
     }
   </style>
 </head>
@@ -941,7 +1424,23 @@
           <canvas id="moodChart"></canvas>
         </div>
 
+
+
         <div class="analysis-section" id="analysisSection"></div>
+
+        <!-- 详细记录展示区域 -->
+        <div class="records-section">
+          <h3>📋 详细记录</h3>
+          <div class="filter-tabs" style="margin-bottom: 20px;">
+            <button class="filter-tab active" onclick="filterReportRecords('all')">全部</button>
+            <button class="filter-tab" onclick="filterReportRecords('mood')">心情记录</button>
+            <button class="filter-tab" onclick="filterReportRecords('voice')">语音日记</button>
+            <button class="filter-tab" onclick="filterReportRecords('sound')">声音收藏</button>
+          </div>
+          <div id="reportRecordsList" class="report-records-list">
+            <!-- 详细记录将通过 JavaScript 动态生成 -->
+          </div>
+        </div>
 
         <div style="text-align: center; margin-top: 30px;">
           <button class="btn btn-primary" onclick="backToMain()">返回主页</button>
@@ -1465,7 +1964,10 @@
        
        const allRecords = getRecords();
        const records = allRecords.filter(r => {
-         const recordDate = new Date(r.date);
+         // 确保使用正确的日期字段
+         const dateValue = r.date || r.timestamp;
+         if (!dateValue) return false;
+         const recordDate = new Date(dateValue);
          return recordDate >= startDate && recordDate <= endDate;
        });
        
@@ -1477,25 +1979,50 @@
        
        const happyDays = moodRecords.filter(r => parseInt(r.mood) >= 4).length;
        const sadDays = moodRecords.filter(r => parseInt(r.mood) <= 2).length;
+       const neutralDays = moodRecords.filter(r => parseInt(r.mood) === 3).length;
        
-       // 显示统计卡片
+       // 计算心情分布百分比
+       const totalMoodDays = moodRecords.length;
+       const happyPercentage = totalMoodDays > 0 ? Math.round((happyDays / totalMoodDays) * 100) : 0;
+       const sadPercentage = totalMoodDays > 0 ? Math.round((sadDays / totalMoodDays) * 100) : 0;
+       const neutralPercentage = totalMoodDays > 0 ? Math.round((neutralDays / totalMoodDays) * 100) : 0;
+       
+       // 计算心情稳定性
+       const moodValues = moodRecords.map(r => parseInt(r.mood));
+       const moodVariance = moodValues.length > 1 ? 
+         Math.sqrt(moodValues.reduce((sum, val) => sum + Math.pow(val - avgMood, 2), 0) / moodValues.length).toFixed(1) : 0;
+       
+       // 找出最常见的心情等级
+       const moodCounts = {};
+       moodRecords.forEach(r => {
+         const mood = parseInt(r.mood);
+         moodCounts[mood] = (moodCounts[mood] || 0) + 1;
+       });
+       const mostCommonMood = Object.keys(moodCounts).length > 0 ? 
+         Object.keys(moodCounts).reduce((a, b) => moodCounts[a] > moodCounts[b] ? a : b) : '0';
+       
+       // 显示统计卡片（简化到4个核心指标）
        const statsGrid = document.getElementById('statsGrid');
        statsGrid.innerHTML = `
          <div class="stat-card">
            <div class="stat-value">${avgMood}</div>
            <div class="stat-label">平均心情指数</div>
+           <div class="stat-subtitle">1-5分，越高越好</div>
          </div>
          <div class="stat-card">
+            <div class="stat-value">${happyPercentage}%</div>
+            <div class="stat-label">积极情绪占比</div>
+            <div class="stat-subtitle">开心天数比例</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${moodVariance}</div>
+            <div class="stat-label">情绪稳定性</div>
+            <div class="stat-subtitle">数值越低越稳定</div>
+          </div>
+          <div class="stat-card">
             <div class="stat-value">${records.length}</div>
-            <div class="stat-label">总记录数</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${happyDays}</div>
-            <div class="stat-label">开心天数</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${sadDays}</div>
-            <div class="stat-label">低落天数</div>
+            <div class="stat-label">记录总数</div>
+            <div class="stat-subtitle">心情+语音+声音</div>
           </div>
         `;
         
@@ -1503,7 +2030,10 @@
         drawChart(moodRecords, startDate, endDate);
         
         // 生成分析和建议
-        generateAnalysisAndAdvice(records, moodRecords, avgMood, happyDays, sadDays);
+        generateAnalysisAndAdvice(records, moodRecords, avgMood, happyDays, sadDays, happyPercentage, sadPercentage, neutralPercentage, moodVariance, mostCommonMood);
+        
+        // 显示详细记录
+        displayReportRecords(records);
       }
 
       // 绘制折线图
@@ -1523,11 +2053,15 @@
         // 按日期分组
         const dayData = new Map();
         moodRecords.forEach(record => {
-          const date = new Date(record.date).toLocaleDateString();
-          if (!dayData.has(date)) {
-            dayData.set(date, []);
+          // 确保使用正确的日期字段
+          const dateValue = record.date || record.timestamp;
+          if (dateValue) {
+            const date = new Date(dateValue).toLocaleDateString();
+            if (!dayData.has(date)) {
+              dayData.set(date, []);
+            }
+            dayData.get(date).push(parseInt(record.mood));
           }
-          dayData.get(date).push(parseInt(record.mood));
         });
         
         // 计算每天平均心情
@@ -1600,16 +2134,59 @@
         
         ctx.stroke();
         
+        // 绘制渐变填充区域
+        const gradient = ctx.createLinearGradient(0, padding, 0, canvas.height - padding);
+        gradient.addColorStop(0, 'rgba(102, 126, 234, 0.3)');
+        gradient.addColorStop(1, 'rgba(102, 126, 234, 0.05)');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        
+        let fillFirstPoint = true;
+        avgMoods.forEach((mood, index) => {
+          if (mood !== null) {
+            const x = padding + (chartWidth * index / (dates.length - 1));
+            const y = canvas.height - padding - (chartHeight * mood / 5);
+            
+            if (fillFirstPoint) {
+              ctx.moveTo(x, canvas.height - padding);
+              ctx.lineTo(x, y);
+              fillFirstPoint = false;
+            } else {
+              ctx.lineTo(x, y);
+            }
+          }
+        });
+        
+        if (!fillFirstPoint) {
+          ctx.lineTo(padding + (chartWidth * (avgMoods.length - 1) / (dates.length - 1)), canvas.height - padding);
+          ctx.closePath();
+          ctx.fill();
+        }
+        
         // 绘制数据点
         avgMoods.forEach((mood, index) => {
           if (mood !== null) {
             const x = padding + (chartWidth * index / (dates.length - 1));
             const y = canvas.height - padding - (chartHeight * mood / 5);
             
+            // 绘制外圈
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(x, y, 7, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制内圈
             ctx.fillStyle = '#667eea';
             ctx.beginPath();
             ctx.arc(x, y, 5, 0, Math.PI * 2);
             ctx.fill();
+            
+            // 添加数值标签
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(mood.toFixed(1), x, y - 12);
           }
         });
         
@@ -1625,10 +2202,16 @@
             ctx.fillText(shortDate, x, canvas.height - padding + 20);
           }
         });
+        
+        // 添加图表标题
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('心情趋势图', canvas.width / 2, 25);
       }
 
       // 生成分析和建议
-      function generateAnalysisAndAdvice(allRecords, moodRecords, avgMood, happyDays, sadDays) {
+      function generateAnalysisAndAdvice(allRecords, moodRecords, avgMood, happyDays, sadDays, happyPercentage, sadPercentage, neutralPercentage, moodVariance, mostCommonMood) {
         const analysisDiv = document.getElementById('moodAnalysis');
         const adviceDiv = document.getElementById('moodAdvice');
         
@@ -1640,6 +2223,42 @@
         
         const happyTexts = happyRecords.map(r => r.text).filter(t => t).join(' ');
         const sadTexts = sadRecords.map(r => r.text).filter(t => t).join(' ');
+        
+        // 心情分布分析
+        analysis += '<div class="mood-distribution">';
+        analysis += '<h4>📈 心情分布</h4>';
+        analysis += '<div class="mood-bars">';
+        analysis += `<div class="mood-bar happy" style="width: ${happyPercentage}%" title="开心 ${happyPercentage}%">😊 ${happyPercentage}%</div>`;
+        analysis += `<div class="mood-bar neutral" style="width: ${neutralPercentage}%" title="平静 ${neutralPercentage}%">😐 ${neutralPercentage}%</div>`;
+        analysis += `<div class="mood-bar sad" style="width: ${sadPercentage}%" title="低落 ${sadPercentage}%">😔 ${sadPercentage}%</div>`;
+        analysis += '</div></div>';
+        
+        // 心情稳定性分析
+        if (moodVariance > 0) {
+          let stabilityText = '';
+          let stabilityEmoji = '';
+          if (moodVariance < 0.8) {
+            stabilityText = '非常稳定';
+            stabilityEmoji = '🎯';
+          } else if (moodVariance < 1.2) {
+            stabilityText = '比较稳定';
+            stabilityEmoji = '😌';
+          } else if (moodVariance < 1.5) {
+            stabilityText = '有些波动';
+            stabilityEmoji = '🌊';
+          } else {
+            stabilityText = '波动较大';
+            stabilityEmoji = '🎢';
+          }
+          analysis += `<p>${stabilityEmoji} <strong>心情稳定性：</strong>${stabilityText} (方差: ${moodVariance})</p>`;
+        }
+        
+        // 最常见心情分析
+        if (mostCommonMood !== '0') {
+          const moodLabels = ['很糟糕', '不太好', '一般般', '还不错', '非常好'];
+          const moodEmojis = ['😢', '😕', '😐', '🙂', '😄'];
+          analysis += `<p>🌟 <strong>最常见心情：</strong>${moodEmojis[parseInt(mostCommonMood) - 1]} ${moodLabels[parseInt(mostCommonMood) - 1]}</p>`;
+        }
         
         if (happyTexts) {
           const keywords = extractKeywords(happyTexts);
@@ -1699,6 +2318,105 @@
         
         advice += '</ul>';
         adviceDiv.innerHTML = advice;
+      }
+
+
+
+      // 显示报告中的详细记录
+      let currentReportFilter = 'all';
+      
+      function displayReportRecords(records) {
+        const listDiv = document.getElementById('reportRecordsList');
+        
+        // 根据筛选条件过滤数据
+        let filteredRecords = records;
+        if (currentReportFilter !== 'all') {
+          filteredRecords = records.filter(r => r.type === currentReportFilter);
+        }
+        
+        // 按时间倒序排列
+        filteredRecords.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        if (filteredRecords.length === 0) {
+          listDiv.innerHTML = `
+            <div class="no-data">
+              <div class="no-data-icon">📭</div>
+              <p>该时间段内暂无记录</p>
+            </div>
+          `;
+          return;
+        }
+        
+        // 生成数据列表
+        let html = '';
+        filteredRecords.forEach(record => {
+          const date = new Date(record.timestamp);
+          const dateStr = `${date.getFullYear()}年${String(date.getMonth() + 1).padStart(2, '0')}月${String(date.getDate()).padStart(2, '0')}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+          
+          let typeLabel = '';
+          let moodEmoji = '';
+          let content = '';
+          
+          if (record.type === 'mood') {
+            typeLabel = '心情记录';
+            const moodLabels = ['很糟糕', '不太好', '一般般', '还不错', '非常好'];
+            const moodEmojis = ['😢', '😕', '😐', '🙂', '😄'];
+            moodEmoji = moodEmojis[parseInt(record.mood) - 1];
+            content = `<div class="record-item-content"><strong>心情：${moodLabels[parseInt(record.mood) - 1]}</strong></div>`;
+            if (record.text) {
+              content += `<div class="record-item-content">${record.text}</div>`;
+            }
+          } else if (record.type === 'voice') {
+            typeLabel = '语音日记';
+            moodEmoji = '🎙️';
+            if (record.text) {
+              content = `<div class="record-item-content">${record.text}</div>`;
+            }
+            if (record.audio) {
+              content += `<div class="record-item-audio"><audio controls src="${record.audio}"></audio></div>`;
+            }
+          } else if (record.type === 'sound') {
+            typeLabel = '声音收藏';
+            moodEmoji = '🔊';
+            if (record.text) {
+              content = `<div class="record-item-content">${record.text}</div>`;
+            }
+            if (record.description) {
+              content += `<div class="record-item-content"><strong>描述：</strong>${record.description}</div>`;
+            }
+            if (record.audio) {
+              content += `<div class="record-item-audio"><audio controls src="${record.audio}"></audio></div>`;
+            }
+          }
+          
+          html += `
+            <div class="record-item">
+              <div class="record-item-header">
+                <div>
+                  <span class="record-item-mood">${moodEmoji}</span>
+                  <span class="record-item-type">${typeLabel}</span>
+                </div>
+                <span class="record-item-date">${dateStr}</span>
+              </div>
+              ${content}
+            </div>
+          `;
+        });
+        
+        listDiv.innerHTML = html;
+      }
+      
+      // 筛选报告记录
+      function filterReportRecords(type) {
+        currentReportFilter = type;
+        // 更新标签页激活状态
+        document.querySelectorAll('.records-section .filter-tab').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // 重新生成报告以获取当前筛选的记录
+        generateReport();
       }
 
       // 提取关键词
