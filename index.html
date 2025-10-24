@@ -37,8 +37,8 @@
     }
 
     body {
-      font-family: 'Microsoft YaHei', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Comic Sans MS', 'Marker Felt', 'Chalkboard', 'Segoe UI Emoji', 'Apple Color Emoji', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #ffb6c1 0%, #ffd700 50%, #87ceeb 100%);
       min-height: 100vh;
       overflow-x: hidden;
       line-height: 1.6;
@@ -47,10 +47,12 @@
       animation: fadeInBody 0.8s ease-out 0.2s forwards;
     }
 
-    /* 动态背景渐变 */
+    /* 马卡龙动态背景渐变 */
     @keyframes gradientShift {
       0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
+      25% { background-position: 100% 25%; }
+      50% { background-position: 50% 100%; }
+      75% { background-position: 100% 75%; }
       100% { background-position: 0% 50%; }
     }
 
@@ -61,11 +63,11 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
+      background: linear-gradient(-45deg, #ffb6c1, #ffd700, #87ceeb, #98fb98, #dda0dd, #ffa07a);
       background-size: 400% 400%;
-      animation: gradientShift 15s ease infinite;
+      animation: gradientShift 20s ease infinite;
       z-index: -1;
-      opacity: 0.7;
+      opacity: 0.8;
     }
 
     @keyframes fadeInBody {
@@ -107,12 +109,16 @@
       border-radius: 50%;
     }
 
-    .circles li:nth-child(1) { left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
-    .circles li:nth-child(2) { left: 10%; width: 20px; height: 20px; animation-delay: 2s; }
-    .circles li:nth-child(3) { left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
-    .circles li:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-delay: 0s; }
-    .circles li:nth-child(5) { left: 65%; width: 20px; height: 20px; animation-delay: 0s; }
-    .circles li:nth-child(6) { left: 75%; width: 110px; height: 110px; animation-delay: 3s; }
+    .circles li:nth-child(1) { left: 25%; width: 80px; height: 80px; animation-delay: 0s; background: radial-gradient(circle, #ffb6c1, #ff69b4); }
+    .circles li:nth-child(2) { left: 10%; width: 20px; height: 20px; animation-delay: 2s; background: radial-gradient(circle, #ffd700, #ffa500); }
+    .circles li:nth-child(3) { left: 70%; width: 20px; height: 20px; animation-delay: 4s; background: radial-gradient(circle, #87ceeb, #1e90ff); }
+    .circles li:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-delay: 0s; background: radial-gradient(circle, #98fb98, #32cd32); }
+    .circles li:nth-child(5) { left: 65%; width: 20px; height: 20px; animation-delay: 0s; background: radial-gradient(circle, #dda0dd, #da70d6); }
+    .circles li:nth-child(6) { left: 75%; width: 110px; height: 110px; animation-delay: 3s; background: radial-gradient(circle, #ffa07a, #ff6347); }
+    .circles li:nth-child(7) { left: 15%; width: 40px; height: 40px; animation-delay: 1s; background: radial-gradient(circle, #ffb6c1, #ff69b4); }
+    .circles li:nth-child(8) { left: 85%; width: 30px; height: 30px; animation-delay: 5s; background: radial-gradient(circle, #ffd700, #ffa500); }
+    .circles li:nth-child(9) { left: 55%; width: 50px; height: 50px; animation-delay: 3s; background: radial-gradient(circle, #87ceeb, #1e90ff); }
+    .circles li:nth-child(10) { left: 30%; width: 25px; height: 25px; animation-delay: 7s; background: radial-gradient(circle, #98fb98, #32cd32); }
 
     @keyframes float {
       0% { transform: translateY(0) rotate(0deg); opacity: 1; }
@@ -130,16 +136,60 @@
       font-size: 4rem;
       margin-bottom: 1rem;
       animation: slideDown 0.8s;
+      font-family: 'Comic Sans MS', 'Marker Felt', 'Chalkboard', cursive;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(255, 182, 193, 0.3);
+      position: relative;
+      display: inline-block;
+    }
+
+    .welcome-content h1::before,
+    .welcome-content h1::after {
+      content: '💖';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2.5rem;
+      animation: heartbeat 2s ease-in-out infinite;
+      filter: drop-shadow(0 4px 8px rgba(255, 105, 180, 0.4));
+    }
+
+    .welcome-content h1::before {
+      left: -70px;
+      animation-delay: 0s;
+    }
+
+    .welcome-content h1::after {
+      right: -70px;
+      animation-delay: 1s;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% {
+        transform: translateY(-50%) scale(1);
+        opacity: 1;
+      }
+      25% {
+        transform: translateY(-50%) scale(1.2);
+        opacity: 0.8;
+      }
+      50% {
+        transform: translateY(-50%) scale(1);
+        opacity: 1;
+      }
+      75% {
+        transform: translateY(-50%) scale(0.8);
+        opacity: 0.9;
+      }
     }
 
     .welcome-content .subtitle {
       font-size: 1.6rem;
       margin-bottom: 1rem;
       opacity: 0.9;
-      color: #4a5568;
       font-weight: 500;
       letter-spacing: -0.3px;
-      background: linear-gradient(135deg, #4a5568 0%, #718096 100%);
+      background: linear-gradient(135deg, #ffb6c1 0%, #ffd700 50%, #87ceeb 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -213,6 +263,8 @@
       letter-spacing: 0.5px;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
+      font-family: 'Comic Sans MS', 'Marker Felt', cursive;
+      text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
     }
 
     /* 移动端触摸优化 */
@@ -244,17 +296,59 @@
     }
 
     .btn-start {
-      background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-      color: #667eea;
-      border: 2px solid rgba(102, 126, 234, 0.3);
-      box-shadow: 0 12px 35px rgba(102, 126, 234, 0.15);
+      background: linear-gradient(135deg, #ffb6c1 0%, #ffd700 50%, #87ceeb 100%);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 12px 35px rgba(255, 182, 193, 0.3);
+      animation: pulse 2s infinite ease-in-out, float 3s infinite ease-in-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-start::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transition: left 0.6s;
+    }
+
+    .btn-start:hover::before {
+      left: 100%;
     }
 
     .btn-start:hover {
       transform: translateY(-6px) scale(1.05);
-      box-shadow: 0 25px 60px rgba(102, 126, 234, 0.4);
-      background: linear-gradient(135deg, #ffffff 0%, #e8ecff 100%);
-      border-color: rgba(102, 126, 234, 0.5);
+      box-shadow: 0 25px 60px rgba(255, 182, 193, 0.6);
+      background: linear-gradient(135deg, #ffa7b4 0%, #ffcc00 50%, #7ec8e6 100%);
+      border-color: rgba(255, 255, 255, 0.5);
+      animation: pulse 1s infinite ease-in-out, float 2s infinite ease-in-out;
+    }
+
+    .btn-start:active {
+      transform: translateY(-3px) scale(0.98);
+      box-shadow: 0 15px 40px rgba(255, 182, 193, 0.4);
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 12px 35px rgba(255, 182, 193, 0.3);
+      }
+      50% {
+        box-shadow: 0 12px 35px rgba(255, 182, 193, 0.6), 0 0 20px rgba(255, 182, 193, 0.4);
+      }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-3px);
+      }
     }
 
     .btn-back {
@@ -427,10 +521,10 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 8px 32px rgba(255, 182, 193, 0.15);
       flex-wrap: wrap;
       gap: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 182, 193, 0.3);
       position: relative;
       overflow: hidden;
     }
@@ -536,10 +630,10 @@
       backdrop-filter: blur(20px);
       border-radius: 24px;
       padding: 35px 30px;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 12px 40px rgba(255, 182, 193, 0.15);
       cursor: pointer;
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 182, 193, 0.3);
       position: relative;
       overflow: hidden;
     }
@@ -561,7 +655,8 @@
 
     .feature-card:hover {
       transform: translateY(-8px) scale(1.02);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 20px 50px rgba(255, 182, 193, 0.3);
+      background: linear-gradient(135deg, rgba(255, 182, 193, 0.1), rgba(255, 215, 0, 0.1), rgba(135, 206, 235, 0.1));
     }
 
     /* 响应式功能卡片 */
@@ -593,11 +688,11 @@
       font-size: 56px;
       margin-bottom: 20px;
       display: inline-block;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #ffb6c1 0%, #ffd700 50%, #87ceeb 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      filter: drop-shadow(0 4px 8px rgba(102, 126, 234, 0.3));
+      filter: drop-shadow(0 4px 8px rgba(255, 182, 193, 0.3));
       transition: all 0.3s ease;
     }
 
@@ -611,11 +706,13 @@
       color: #2d3748;
       margin-bottom: 12px;
       font-weight: 600;
-      background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+      background: linear-gradient(135deg, #ffb6c1 0%, #ffd700 50%, #87ceeb 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       letter-spacing: -0.5px;
+      font-family: 'Comic Sans MS', 'Marker Felt', cursive;
+      text-shadow: 1px 1px 2px rgba(255, 182, 193, 0.2);
     }
 
     .feature-card p {
@@ -1389,7 +1486,7 @@
   <!-- 欢迎页 -->
   <div class="page welcome-page active" id="welcomePage">
     <div class="circles">
-      <li></li><li></li><li></li><li></li><li></li><li></li>
+      <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
     </div>
     <div class="welcome-content">
       <h1>🌈 心·境</h1>
