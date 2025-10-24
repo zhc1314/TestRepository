@@ -2620,6 +2620,223 @@
         }
         
         // HTML转义函数，防止XSS攻击
+        function escapeHTML(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        // 为消息添加交互功能
+        function addMessageActions(messageBubble) {
+            // 复制按钮功能
+            const copyBtn = messageBubble.querySelector('.copy-btn');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const messageContent = messageBubble.querySelector('.message-content').firstChild.textContent;
+                    navigator.clipboard.writeText(messageContent).then(() => {
+                        // 显示复制成功提示
+                        showToast('消息已复制到剪贴板');
+                        // 临时改变按钮颜色表示成功
+                        const originalColor = copyBtn.style.color;
+                        copyBtn.style.color = '#4CAF50';
+                        setTimeout(() => {
+                            copyBtn.style.color = originalColor;
+                        }, 1500);
+                    }).catch(err => {
+                        console.error('复制失败:', err);
+                    });
+                });
+            }
+            
+            // 删除按钮功能 - 只对用户消息显示
+            const deleteBtn = messageBubble.querySelector('.delete-btn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    // 确认删除
+                    if (confirm('确定要删除这条消息吗？')) {
+                        // 添加淡出动画
+                        messageBubble.style.transition = 'opacity 0.3s ease-out, height 0.3s ease-out, margin 0.3s ease-out';
+                        messageBubble.style.opacity = '0';
+                        messageBubble.style.height = messageBubble.offsetHeight + 'px';
+                        
+                        // 使用setTimeout确保动画执行
+                        setTimeout(() => {
+                            messageBubble.style.height = '0';
+                            messageBubble.style.margin = '0';
+                            messageBubble.style.padding = '0';
+                            messageBubble.style.overflow = 'hidden';
+                            
+                            // 动画结束后删除DOM元素
+                            setTimeout(() => {
+                                if (messageBubble.parentNode) {
+                                    messageBubble.parentNode.removeChild(messageBubble);
+                                }
+                                // 更新统计
+                                updateEmotionStats();
+                            }, 300);
+                        }, 10);
+                    }
+                });
+            }
+        }
+        
+        // 显示提示消息
+        function showToast(message) {
+            let toast = document.getElementById('toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast';
+                toast.className = 'toast-notification';
+                document.body.appendChild(toast);
+                
+                // 添加CSS样式
+                const style = document.createElement('style');
+                style.textContent = `
+                    .toast-notification {
+                        position: fixed;
+                        bottom: 20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background-color: rgba(0, 0, 0, 0.8);
+                        color: white;
+                        padding: 12px 24px;
+                        border-radius: 4px;
+                        z-index: 1000;
+                        opacity: 0;
+                        transition: opacity 0.3s ease;
+                        font-size: 14px;
+                    }
+                    
+                    .toast-notification.show {
+                        opacity: 1;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 消息交互样式增强 - 添加到现有CSS中
+        const messageActionsStyle = document.createElement('style');
+        messageActionsStyle.textContent = `
+            .message-bubble {
+                position: relative;
+            }
+            
+            .message-content {
+                position: relative;
+                display: flex;
+                align-items: flex-end;
+            }
+            
+            .message-actions {
+                position: absolute;
+                top: 4px;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+                display: flex;
+                gap: 4px;
+                z-index: 10;
+            }
+            
+            .message-bubble.user .message-actions {
+                right: 4px;
+            }
+            
+            .message-bubble.bot .message-actions {
+                left: 4px;
+            }
+            
+            .message-bubble:hover .message-actions {
+                opacity: 1;
+            }
+            
+            .action-btn {
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                border-radius: 4px;
+                padding: 4px;
+                cursor: pointer;
+                color: inherit;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+            
+            .action-btn:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(1.05);
+            }
+            
+            .action-btn:active {
+                transform: scale(0.95);
+            }
+        `;
+        document.head.appendChild(messageActionsStyle);
+        
+        // 初始化现有消息的交互功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const existingMessages = document.querySelectorAll('.message-bubble');
+            existingMessages.forEach(message => {
+                // 创建并添加操作按钮
+                const messageContent = message.querySelector('.message-content');
+                const isUserMessage = message.classList.contains('user');
+                
+                // 移除现有的操作按钮容器（如果有）
+                const existingActions = messageContent.querySelector('.message-actions');
+                if (existingActions) {
+                    existingActions.remove();
+                }
+                
+                // 创建新的操作按钮容器
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'message-actions';
+                
+                // 添加复制按钮
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'action-btn copy-btn';
+                copyBtn.title = '复制消息';
+                copyBtn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <rect x="2" y="5" width="11" height="9" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M4 2.5C4 1.67157 4.67157 1 5.5 1H13.5C14.3284 1 15 1.67157 15 2.5V10.5C15 11.3284 14.3284 12 13.5 12H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                `;
+                actionsDiv.appendChild(copyBtn);
+                
+                // 只有用户消息显示删除按钮
+                if (isUserMessage) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'action-btn delete-btn';
+                    deleteBtn.title = '删除消息';
+                    deleteBtn.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M3 5V13C3 13.5304 3.21071 14.0391 3.58579 14.4142C3.96086 14.7893 4.46957 15 5 15H11C11.5304 15 12.0391 14.7893 12.4142 14.4142C12.7893 14.0391 13 13.5304 13 13V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M4.5 5V4C4.5 3.20435 4.81607 2.44129 5.37868 1.87868C5.94129 1.31607 6.70435 1 7.5 1H8.5C9.29565 1 10.0587 1.31607 10.6213 1.87868C11.1839 2.44129 11.5 3.20435 11.5 4V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M8 8V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <circle cx="6.5" cy="9.5" r="1" stroke="currentColor" stroke-width="1.5"/>
+                            <circle cx="9.5" cy="9.5" r="1" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                    `;
+                    actionsDiv.appendChild(deleteBtn);
+                }
+                
+                messageContent.appendChild(actionsDiv);
+                addMessageActions(message);
+            });
+        });
         function escapeHTML(str) {
             const div = document.createElement('div');
             div.textContent = str;
