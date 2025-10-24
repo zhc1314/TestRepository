@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic import Field
 from typing import List
 
 
@@ -21,9 +22,12 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
-    # AI模型配置（预留）
-    AI_MODEL_API_KEY: str = ""
-    AI_MODEL_ENDPOINT: str = ""
+    # AI模型配置
+    AI_API_KEY: str = Field(default="your-api-key-here", env="AI_API_KEY")
+    AI_ENDPOINT: str = Field(default="https://api.openai.com/v1", env="AI_ENDPOINT")
+    AI_MODEL_NAME: str = Field(default="gpt-3.5-turbo", env="AI_MODEL_NAME")
+    AI_MAX_TOKENS: int = Field(default=2000, env="AI_MAX_TOKENS")
+    AI_TEMPERATURE: float = Field(default=0.7, env="AI_TEMPERATURE")
     
     @property
     def cors_origins_list(self) -> List[str]:
