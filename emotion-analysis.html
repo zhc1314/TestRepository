@@ -2400,8 +2400,28 @@
                     <div class="message-content">
                         ${escapeHTML(message)}
                         <span class="emotion-indicator ${userEmotion}"></span>
+                        <div class="message-actions">
+                            <button class="action-btn copy-btn" title="复制消息">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                    <rect x="2" y="5" width="11" height="9" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                                    <path d="M4 2.5C4 1.67157 4.67157 1 5.5 1H13.5C14.3284 1 15 1.67157 15 2.5V10.5C15 11.3284 14.3284 12 13.5 12H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                            <button class="action-btn delete-btn" title="删除消息">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M3 5V13C3 13.5304 3.21071 14.0391 3.58579 14.4142C3.96086 14.7893 4.46957 15 5 15H11C11.5304 15 12.0391 14.7893 12.4142 14.4142C12.7893 14.0391 13 13.5304 13 13V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    <path d="M4.5 5V4C4.5 3.20435 4.81607 2.44129 5.37868 1.87868C5.94129 1.31607 6.70435 1 7.5 1H8.5C9.29565 1 10.0587 1.31607 10.6213 1.87868C11.1839 2.44129 11.5 3.20435 11.5 4V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    <path d="M8 8V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    <circle cx="6.5" cy="9.5" r="1" stroke="currentColor" stroke-width="1.5"/>
+                                    <circle cx="9.5" cy="9.5" r="1" stroke="currentColor" stroke-width="1.5"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 `;
+                
+                // 为按钮添加事件监听器
+                addMessageActions(userBubble);
                 conversationList.appendChild(userBubble);
                 
                 // 清空输入框
@@ -2437,8 +2457,19 @@
                         <div class="message-content">
                             ${botResponse.text}
                             <span class="emotion-indicator ${botResponse.emotion}"></span>
+                            <div class="message-actions">
+                                <button class="action-btn copy-btn" title="复制消息">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                        <rect x="2" y="5" width="11" height="9" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                                        <path d="M4 2.5C4 1.67157 4.67157 1 5.5 1H13.5C14.3284 1 15 1.67157 15 2.5V10.5C15 11.3284 14.3284 12 13.5 12H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     `;
+                    
+                    // 为按钮添加事件监听器
+                    addMessageActions(botBubble);
                     conversationList.appendChild(botBubble);
                     
                     // 自动滚动到底部
