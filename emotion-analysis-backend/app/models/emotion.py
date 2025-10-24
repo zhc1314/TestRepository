@@ -7,14 +7,14 @@ Base = declarative_base()
 
 class EmotionType(str, enum.Enum):
     """情绪类型枚举"""
-    HAPPY = "happy"  # 快乐
-    SAD = "sad"  # 悲伤
-    ANGRY = "angry"  # 愤怒
-    ANXIOUS = "anxious"  # 焦虑
-    CALM = "calm"  # 平静
-    EXCITED = "excited"  # 兴奋
-    DEPRESSED = "depressed"  # 抑郁
-    NEUTRAL = "neutral"  # 中性
+    HAPPY = "HAPPY"  # 快乐
+    SAD = "SAD"  # 悲伤
+    ANGRY = "ANGRY"  # 愤怒
+    ANXIOUS = "ANXIOUS"  # 焦虑
+    CALM = "CALM"  # 平静
+    EXCITED = "EXCITED"  # 兴奋
+    DEPRESSED = "DEPRESSED"  # 抑郁
+    NEUTRAL = "NEUTRAL"  # 中性
 
 class EmotionRecord(Base):
     """情绪记录模型"""

@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS emotion_records (
     input_text TEXT NOT NULL COMMENT '用户输入的文本或日记内容',
     input_type VARCHAR(20) DEFAULT 'text' COMMENT '输入类型：text/file',
     file_path VARCHAR(500) DEFAULT NULL COMMENT '上传文件路径（如有）',
-    emotion_type ENUM('happy', 'sad', 'angry', 'anxious', 'calm', 'excited', 'depressed', 'neutral') DEFAULT NULL COMMENT '识别的主要情绪类型',
+    emotion_type ENUM('HAPPY', 'SAD', 'ANGRY', 'ANXIOUS', 'CALM', 'EXCITED', 'DEPRESSED', 'NEUTRAL') DEFAULT NULL COMMENT '识别的主要情绪类型',
     emotion_score FLOAT DEFAULT NULL COMMENT '情绪强度评分(0-1)',
     analysis_result TEXT DEFAULT NULL COMMENT 'AI分析的详细结果',
     suggestions TEXT DEFAULT NULL COMMENT 'AI给出的建议',

@@ -26,14 +26,30 @@ async def analyze_emotion(
     - **user_id**: 用户ID
     - **text**: 待分析的文本内容
     """
+    print(f"\n{'='*60}")
+    print(f"路由层: 收到情绪分析请求")
+    print(f"user_id: {request.user_id}")
+    print(f"text: {request.text}")
+    print(f"emotion_service对象: {emotion_service}")
+    print(f"emotion_service.analyze_text_emotion方法: {emotion_service.analyze_text_emotion}")
+    print(f"{'='*60}\n")
     try:
+        print("即将调用 emotion_service.analyze_text_emotion...")
         result = await emotion_service.analyze_text_emotion(
             db=db,
             user_id=request.user_id,
             text=request.text
         )
+        print(f"emotion_service.analyze_text_emotion 调用完成，返回: {result}")
+        print(f"\n{'='*60}")
+        print(f"路由层: 情绪分析完成")
+        print(f"result: {result}")
+        print(f"{'='*60}\n")
         return result
     except Exception as e:
+        import traceback
+        print(f"情绪分析错误: {str(e)}")
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"情绪分析失败: {str(e)}")
 
 @router.post("/emotion/analyze-file", response_model=EmotionAnalysisResponse)

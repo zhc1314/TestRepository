@@ -4,6 +4,13 @@ from app.api import emotion_routes
 from app.core.config import settings
 from app.core.database import init_db
 
+print("="*50)
+print("配置信息:")
+print(f"API_KEY: {settings.BAILILIAN_API_KEY[:20] if settings.BAILILIAN_API_KEY else 'None'}...")
+print(f"API_URL: {settings.BAILILIAN_API_URL}")
+print(f"MODEL: {settings.BAILILIAN_MODEL}")
+print("="*50)
+
 app = FastAPI(
     title="AI情绪分析系统",
     description="基于百炼大模型的情绪分析后端API",
