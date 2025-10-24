@@ -20,17 +20,27 @@ class EmotionService:
             情绪记录对象
         """
         # 调用AI服务分析情绪
+        print(f"\n{'='*50}")
+        print(f"EmotionService: 准备调用AI服务")
+        print(f"输入文本: {text}")
         ai_result = await ai_service.analyze_emotion(text)
+        print(f"AI服务返回结果: {ai_result}")
+        print(f"{'='*50}\n")
+        
+        # 处理suggestions：如果是列表，转换为字符串
+        suggestions = ai_result.get("suggestions", "")
+        if isinstance(suggestions, list):
+            suggestions = "\n".join(f"{i+1}. {s}" for i, s in enumerate(suggestions))
         
         # 创建情绪记录
         emotion_record = EmotionRecord(
             user_id=user_id,
             input_text=text,
             input_type="text",
-            emotion_type=EmotionType(ai_result.get("emotion_type", "neutral")),
+            emotion_type=EmotionType(ai_result.get("emotion_type", "NEUTRAL")),
             emotion_score=ai_result.get("emotion_score", 0.5),
             analysis_result=ai_result.get("analysis", ""),
-            suggestions=ai_result.get("suggestions", "")
+            suggestions=suggestions
         )
         
         # 保存到数据库
@@ -56,6 +66,11 @@ class EmotionService:
         # 调用AI服务分析情绪
         ai_result = await ai_service.analyze_emotion(file_content)
         
+        # 处理suggestions：如果是列表，转换为字符串
+        suggestions = ai_result.get("suggestions", "")
+        if isinstance(suggestions, list):
+            suggestions = "\n".join(f"{i+1}. {s}" for i, s in enumerate(suggestions))
+        
         # 创建情绪记录
         emotion_record = EmotionRecord(
             user_id=user_id,
@@ -65,7 +80,7 @@ class EmotionService:
             emotion_type=EmotionType(ai_result.get("emotion_type", "neutral")),
             emotion_score=ai_result.get("emotion_score", 0.5),
             analysis_result=ai_result.get("analysis", ""),
-            suggestions=ai_result.get("suggestions", "")
+            suggestions=suggestions
         )
         
         # 保存到数据库

@@ -1445,19 +1445,39 @@
             saveBtn.disabled = !(selectedEmotion && emotionDescription.value.trim().length > 10);
         }
 
-        saveBtn.addEventListener('click', () => {
+        saveBtn.addEventListener('click', async () => {
             const description = emotionDescription.value.trim();
             const record = { 
                 emotion: selectedEmotion, 
                 intensity: emotionIntensity,
                 description 
             };
-            storage.saveRecord(record);
+            
+            // 显示加载状态
             result.style.display = 'block';
-            resultContent.innerHTML = '<div style="text-align: center; color: #667eea;">正在分析...</div>';
-            setTimeout(() => {
-                resultContent.innerHTML = generateAnalysis(selectedEmotion, emotionIntensity, description);
-            }, 1000);
+            resultContent.innerHTML = '<div style="text-align: center; color: #667eea;">🤖 AI正在分析你的情绪...</div>';
+            saveBtn.disabled = true;
+            saveBtn.textContent = '分析中...';
+            
+            try {
+                // 调用后端AI分析接口
+                const aiAnalysis = await analyzeEmotionWithAI(selectedEmotion, emotionIntensity, description);
+                
+                // 将AI分析结果添加到记录中
+                record.aiAnalysis = aiAnalysis;
+                storage.saveRecord(record);
+                
+                // 显示AI分析结果
+                resultContent.innerHTML = generateAIAnalysis(aiAnalysis, selectedEmotion, emotionIntensity, description);
+            } catch (error) {
+                console.error('AI分析失败:', error);
+                // 如果AI分析失败,使用本地分析作为后备
+                storage.saveRecord(record);
+                resultContent.innerHTML = generateAnalysis(selectedEmotion, emotionIntensity, description) + 
+                    '<div style="margin-top: 15px; padding: 10px; background: #FFF3CD; border-radius: 8px; color: #856404;">⚠️ AI分析服务暂时不可用,已使用本地分析</div>';
+            }
+            
+            // 重置表单
             setTimeout(() => {
                 emotionTypeBtns.forEach(b => b.classList.remove('active'));
                 document.querySelector('.emotion-type-btn').classList.add('active');
@@ -1470,9 +1490,61 @@
                 currentEmotionIcon.textContent = emotionIcons['快乐'];
                 updateSliderColor();
                 saveBtn.disabled = true;
-            }, 2000);
+                saveBtn.textContent = '保存并分析';
+            }, 3000);
         });
 
+        // 调用后端AI分析接口
+        async function analyzeEmotionWithAI(emotion, intensity, description) {
+            const API_BASE_URL = 'http://localhost:8000/api/v1';
+            
+            // 构建完整的分析文本
+            const analysisText = `情绪类型: ${emotion}\n情绪强度: ${intensity}/10\n描述: ${description}`;
+            
+            const response = await fetch(`${API_BASE_URL}/emotion/analyze`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: 1, // 默认用户ID,实际应用中应该从登录状态获取
+                    text: analysisText
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API请求失败: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data;
+        }
+        
+        // 生成AI分析结果的HTML
+        function generateAIAnalysis(aiData, emotion, intensity, description) {
+            const emotionType = aiData.emotion_type || emotion;
+            const emotionScore = aiData.emotion_score ? (aiData.emotion_score * 10).toFixed(1) : intensity;
+            const analysis = aiData.analysis_result || '暂无分析结果';
+            const suggestions = aiData.suggestions || '暂无建议';
+            
+            return `<div class="result-section">
+                    <div class="result-section-title">🤖 AI情绪识别</div>
+                    <div>识别情绪: ${emotionType} | AI评分: ${emotionScore}/10</div>
+                </div>
+                <div class="result-section">
+                    <div class="result-section-title">🔍 深度分析</div>
+                    <div>${analysis}</div>
+                </div>
+                <div class="result-section">
+                    <div class="result-section-title">💡 AI建议</div>
+                    <div>${suggestions}</div>
+                </div>
+                <div class="result-section">
+                    <div class="result-section-title">📝 你的记录</div>
+                    <div style="font-style: italic; color: #666;">"${description}"</div>
+                </div>`;
+        }
+        
         function generateAnalysis(emotion, intensity, description) {
             const analyses = {
                 '快乐': { mood: '积极正面的情绪状态', thoughts: '美好时刻带来愉悦，增强创造力', suggestion: '记录快乐的事，分享给他人' },
