@@ -2,7 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import datetime
 from ..core.database import get_db
+from ..models.user_profile import UserProfile
+from ..services.ai_service import AIService
 
 router = APIRouter(
     prefix="/api/chat",
@@ -34,20 +37,46 @@ async def chat(
     request: ChatRequest,
     db: Session = Depends(get_db)
 ):
-    """AI对话接口（待实现）"""
-    # TODO: 集成大模型API
-    # TODO: 获取用户画像信息作为上下文
-    # TODO: 实现智能体工作流
+    """AI对话接口"""
+    try:
+        # 获取用户画像信息
+        user_profile = None
+        if request.user_id:
+            user_profile = db.query(UserProfile).filter(
+                UserProfile.user_id == request.user_id
+            ).first()
+        
+        # 构建消息历史
+        messages = []
+        if request.history:
+            for msg in request.history:
+                messages.append({
+                    "role": msg.role,
+                    "content": msg.content
+                })
+        
+        # 添加当前用户消息
+        messages.append({
+            "role": "user",
+            "content": request.message
+        })
+        
+        # 调用AI服务(传递数据库会话以启用知识库检索)
+        ai_service = AIService(db)
+        response_content = await ai_service.chat(
+            messages=messages,
+            user_profile=user_profile,
+            user_id=request.user_id,
+            enable_knowledge_base=True
+        )
+        
+        return ChatResponse(
+            message=response_content,
+            timestamp=datetime.now().isoformat()
+        )
     
-    # 临时返回示例响应
-    from datetime import datetime
-    
-    response_message = f"您好！我是AI学习规划助手。您说：{request.message}。\n\n这是一个框架预留接口，后续将集成大模型实现智能对话和学习规划功能。"
-    
-    return ChatResponse(
-        message=response_message,
-        timestamp=datetime.now().isoformat()
-    )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"对话处理失败: {str(e)}")
 
 
 @router.get("/history/{user_id}")
@@ -55,6 +84,10 @@ async def get_chat_history(
     user_id: str,
     db: Session = Depends(get_db)
 ):
-    """获取聊天历史（待实现）"""
-    # TODO: 实现聊天历史存储和查询
+    """获取用户的聊天历史
+    
+    注意: 当前版本暂未实现历史存储,返回空列表
+    TODO: 后续可考虑将对话历史存储到数据库
+    """
+    # 临时返回空历史
     return {"user_id": user_id, "history": []}

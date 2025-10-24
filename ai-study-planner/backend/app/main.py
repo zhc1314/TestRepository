@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
 from .core.database import engine, Base
-from .api import user_profile, chat
+from .api import user_profile, chat, knowledge
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -26,6 +26,7 @@ app.add_middleware(
 # 注册路由
 app.include_router(user_profile.router)
 app.include_router(chat.router)
+app.include_router(knowledge.router)
 
 
 @app.get("/")
