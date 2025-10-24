@@ -1455,7 +1455,9 @@
             
             // 显示加载状态
             result.style.display = 'block';
-            resultContent.innerHTML = '<div style="text-align: center; color: #667eea;">🤖 AI正在分析你的情绪...</div>';
+            if (resultContent) {
+                resultContent.innerHTML = '<div style="text-align: center; color: #667eea;">🤖 AI正在分析你的情绪...</div>';
+            }
             saveBtn.disabled = true;
             saveBtn.textContent = '分析中...';
             
@@ -1468,13 +1470,17 @@
                 storage.saveRecord(record);
                 
                 // 显示AI分析结果
-                resultContent.innerHTML = generateAIAnalysis(aiAnalysis, selectedEmotion, emotionIntensity, description);
+                if (resultContent) {
+                    resultContent.innerHTML = generateAIAnalysis(aiAnalysis, selectedEmotion, emotionIntensity, description);
+                }
             } catch (error) {
                 console.error('AI分析失败:', error);
                 // 如果AI分析失败,使用本地分析作为后备
                 storage.saveRecord(record);
-                resultContent.innerHTML = generateAnalysis(selectedEmotion, emotionIntensity, description) + 
-                    '<div style="margin-top: 15px; padding: 10px; background: #FFF3CD; border-radius: 8px; color: #856404;">⚠️ AI分析服务暂时不可用,已使用本地分析</div>';
+                if (resultContent) {
+                    resultContent.innerHTML = generateAnalysis(selectedEmotion, emotionIntensity, description) + 
+                        '<div style="margin-top: 15px; padding: 10px; background: #FFF3CD; border-radius: 8px; color: #856404;">⚠️ AI分析服务暂时不可用,已使用本地分析</div>';
+                }
             }
             
             // 重置表单

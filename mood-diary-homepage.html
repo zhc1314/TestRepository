@@ -1998,7 +1998,7 @@
                 ];
                 
                 // 清空网格
-                historyGrid.innerHTML = '';
+                if (historyGrid) historyGrid.innerHTML = '';
                 
                 // 生成历史记录卡片
                 historyData.forEach(record => {

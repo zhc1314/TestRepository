@@ -1707,7 +1707,8 @@
          switchText.textContent = '还没有账号?';
          switchLink.textContent = '立即注册';
        }
-       document.getElementById('authMessage').innerHTML = '';
+       const authMessage = document.getElementById('authMessage');
+       if (authMessage) authMessage.innerHTML = '';
      }
 
      // 处理认证
@@ -1718,19 +1719,19 @@
        const messageDiv = document.getElementById('authMessage');
        
        if (!username || !password) {
-         messageDiv.innerHTML = '<div class="message error">用户名和密码不能为空</div>';
+         if (messageDiv) messageDiv.innerHTML = '<div class="message error">用户名和密码不能为空</div>';
          return;
        }
        
        if (isAuthMode === 'register') {
          const users = JSON.parse(localStorage.getItem('users') || '{}');
          if (users[username]) {
-           messageDiv.innerHTML = '<div class="message error">用户名已存在</div>';
+           if (messageDiv) messageDiv.innerHTML = '<div class="message error">用户名已存在</div>';
            return;
          }
          users[username] = password;
          localStorage.setItem('users', JSON.stringify(users));
-         messageDiv.innerHTML = '<div class="message success">注册成功！请登录</div>';
+         if (messageDiv) messageDiv.innerHTML = '<div class="message success">注册成功！请登录</div>';
          setTimeout(() => {
            toggleAuthMode();
            document.getElementById('authForm').reset();
@@ -1744,7 +1745,7 @@
            showPage('mainPage');
            document.getElementById('authForm').reset();
          } else {
-           messageDiv.innerHTML = '<div class="message error">用户名或密码错误</div>';
+           if (messageDiv) messageDiv.innerHTML = '<div class="message error">用户名或密码错误</div>';
          }
        }
      }
@@ -2095,7 +2096,7 @@
         generateAnalysisAndAdvice(records, moodRecords, avgMood, happyDays, sadDays, happyPercentage, sadPercentage, neutralPercentage, moodVariance, mostCommonMood);
         
         // 生成AI分析
-        generateAIAnalysis(records, moodRecords, avgMood, happyDays, sadDays, happyPercentage, sadPercentage, neutralPercentage, moodVariance, mostCommonMood);
+        generateAIAnalysis(records, startDate, endDate);
       }
 
       // 绘制折线图
@@ -2336,7 +2337,7 @@
           }
         }
         
-        analysisDiv.innerHTML = analysis || '<p>暂无足够数据进行分析</p>';
+        if (analysisDiv) analysisDiv.innerHTML = analysis || '<p>暂无足够数据进行分析</p>';
         
         // 建议
         let advice = '<h3>💡 个性化建议</h3><ul>';
@@ -2379,7 +2380,7 @@
         }
         
         advice += '</ul>';
-        adviceDiv.innerHTML = advice;
+        if (adviceDiv) adviceDiv.innerHTML = advice;
       }
 
 
@@ -2558,6 +2559,12 @@
       async function generateAIAnalysis(records, startDate, endDate) {
         const aiLoading = document.getElementById('aiLoading');
         const aiResult = document.getElementById('aiAnalysisResult');
+        
+        // 检查元素是否存在
+        if (!aiLoading || !aiResult) {
+          console.error('AI分析元素未找到，请确保页面已完全加载');
+          return;
+        }
         
         // 显示加载状态
         aiLoading.style.display = 'block';
