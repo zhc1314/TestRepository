@@ -1,0 +1,2890 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情感对话分析系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'Segoe UI', sans-serif;
+        }
+        
+        /* 王者荣耀风格色彩变量 */
+        :root {
+            --honor-primary: #c8161d;
+            --honor-secondary: #ff9800;
+            --honor-dark: #1a1a1a;
+            --honor-bg: #0a0a1a;
+            --honor-card: #1e1e3a;
+            --honor-text: #e0e0ff;
+            --honor-text-secondary: #a0a0d0;
+            --honor-glow: #ff2d55;
+            --honor-accent: #00c8ff;
+            --honor-success: #4cd964;
+            --honor-warning: #ffcc00;
+            --honor-danger: #ff3b30;
+            --honor-border: #333355;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--honor-bg) 0%, #15152a 100%);
+            color: var(--honor-text);
+            overflow-x: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(200, 22, 29, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 200, 255, 0.1) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+        
+        /* 主容器 */
+        .app-container {
+            display: flex;
+            height: calc(100vh - 40px);
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+            position: relative;
+        }
+        
+        /* 左侧导航栏 - 王者荣耀风格 */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            border-right: 2px solid var(--honor-primary);
+            padding: 20px 0;
+            overflow-y: auto;
+            transform: translateX(-100%);
+            animation: slideIn 0.5s ease-out 0.1s forwards;
+            box-shadow: 0 0 20px rgba(200, 22, 29, 0.3);
+            position: relative;
+        }
+        
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--honor-primary), var(--honor-secondary));
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .sidebar-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            right: 20px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--honor-primary), transparent);
+        }
+        
+        .sidebar-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--honor-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+        }
+        
+        .sidebar-header h1 i {
+            margin-right: 10px;
+            font-size: 22px;
+            color: var(--honor-primary);
+            text-shadow: 0 0 10px rgba(200, 22, 29, 0.7);
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0 10px;
+        }
+        
+        .nav-menu li {
+            margin-bottom: 8px;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-menu li::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(200, 22, 29, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .nav-menu li:hover::before {
+            left: 100%;
+        }
+        
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: var(--honor-text-secondary);
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            font-weight: 500;
+            text-shadow: 0 0 5px rgba(224, 224, 255, 0.1);
+            border: 1px solid transparent;
+        }
+        
+        /* 技能释放效果 */
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(200, 22, 29, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+        
+        .nav-menu a:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .nav-menu a:hover {
+            background: linear-gradient(135deg, rgba(200, 22, 29, 0.25), rgba(128, 128, 255, 0.1));
+            color: var(--honor-secondary);
+            transform: translateX(8px) translateY(-2px);
+            border-color: rgba(200, 22, 29, 0.3);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 0 10px rgba(200, 22, 29, 0.2);
+        }
+        
+        .nav-menu a.active {
+            background: linear-gradient(135deg, rgba(200, 22, 29, 0.4), rgba(200, 22, 29, 0.2));
+            color: var(--honor-secondary);
+            box-shadow: 
+                0 0 20px rgba(200, 22, 29, 0.6),
+                0 0 10px rgba(255, 255, 255, 0.2),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+            animation: activeNavGlow 2s infinite alternate;
+        }
+        
+        .nav-menu a.active::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 5%;
+            bottom: 5%;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--honor-primary), var(--honor-secondary));
+            border-radius: 2px;
+            box-shadow: 0 0 15px var(--honor-primary);
+            animation: borderPulse 1.5s infinite;
+        }
+        
+        /* 技能指示器 */
+        .nav-menu a .skill-indicator {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #52c41a;
+            margin-right: 10px;
+            animation: skillReadyPulse 2s infinite;
+            box-shadow: 0 0 10px #52c41a;
+        }
+        
+        .nav-menu a.active .skill-indicator {
+            background: var(--honor-secondary);
+            animation: skillActivePulse 1s infinite;
+            box-shadow: 0 0 15px var(--honor-secondary);
+        }
+        
+        .nav-menu a i {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-menu a:hover i {
+            transform: scale(1.2);
+            color: var(--honor-primary);
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUp 0.5s ease-out 0.2s forwards;
+            background: rgba(10, 10, 26, 0.6);
+            position: relative;
+        }
+        
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(200, 22, 29, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        /* 顶部工具栏 */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--honor-border);
+            position: relative;
+        }
+        
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--honor-text);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+        
+        .mobile-menu-btn:hover {
+            background: rgba(200, 22, 29, 0.2);
+            color: var(--honor-primary);
+            text-shadow: 0 0 10px var(--honor-primary);
+        }
+        
+        .toolbar::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--honor-primary), var(--honor-secondary));
+        }
+        
+        .toolbar h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--honor-text);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(200, 22, 29, 0.3);
+        }
+        
+        .toolbar-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        /* 按钮样式 - 王者荣耀风格 */
+        .btn {
+            padding: 10px 20px;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--honor-primary), #e53e3e);
+            color: white;
+            border-color: var(--honor-primary);
+            box-shadow: 0 0 15px rgba(200, 22, 29, 0.5);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(200, 22, 29, 0.7), 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-default {
+            background: linear-gradient(135deg, var(--honor-dark), #2d2d4a);
+            color: var(--honor-text-secondary);
+            border-color: var(--honor-border);
+        }
+        
+        .btn-default:hover {
+            border-color: var(--honor-secondary);
+            color: var(--honor-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+        }
+        
+        /* 历史记录样式 */
+        .search-filter {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .search-input {
+            padding: 10px 15px;
+            border: 2px solid var(--honor-border);
+            border-radius: 6px;
+            font-size: 14px;
+            width: 240px;
+            outline: none;
+            transition: all 0.3s ease;
+            background-color: rgba(30, 30, 58, 0.8);
+            color: var(--honor-text);
+        }
+        
+        .search-input:focus {
+            border-color: var(--honor-secondary);
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+        }
+        
+        .filter-select {
+            padding: 10px 15px;
+            border: 2px solid var(--honor-border);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            background-color: rgba(30, 30, 58, 0.8);
+            color: var(--honor-text);
+        }
+        
+        .filter-select:focus {
+            border-color: var(--honor-secondary);
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+        }
+        
+        .history-stats {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--honor-dark), #1a1a3a);
+            border-radius: 10px;
+            border: 1px solid var(--honor-border);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .history-stats::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--honor-primary), var(--honor-secondary));
+        }
+        
+        .history-stats-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .history-stats-label {
+            font-size: 14px;
+            color: var(--honor-text-secondary);
+            font-weight: 500;
+        }
+        
+        .history-stats-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--honor-text);
+            text-shadow: 0 0 10px rgba(224, 224, 255, 0.2);
+        }
+        
+        .history-stats-value.highlight {
+            color: var(--honor-danger);
+            text-shadow: 0 0 15px rgba(255, 59, 48, 0.5);
+        }
+        
+        /* 表格容器和表格样式 - 王者荣耀风格 */
+        .table-container {
+            background: rgba(30, 30, 58, 0.8);
+            border-radius: 10px;
+            border: 1px solid var(--honor-border);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .table-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--honor-primary), var(--honor-secondary));
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .history-table th,
+        .history-table td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid var(--honor-border);
+        }
+        
+        .history-table th {
+            background: linear-gradient(135deg, rgba(200, 22, 29, 0.1), rgba(255, 152, 0, 0.1));
+            font-weight: 700;
+            color: var(--honor-text);
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .history-table tbody tr {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .history-table tbody tr:hover {
+            background-color: rgba(255, 152, 0, 0.1);
+            transform: scale(1.01);
+        }
+        
+        .history-table tbody tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+        
+        .history-table tbody tr:nth-child(even):hover {
+            background-color: rgba(255, 152, 0, 0.1);
+        }
+        
+        .history-table td {
+            color: var(--honor-text-secondary);
+        }
+        
+        /* 情感标签样式 */
+        .emotion-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid transparent;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .emotion-badge.positive {
+            background: linear-gradient(135deg, rgba(82, 196, 26, 0.1), rgba(82, 196, 26, 0.2));
+            color: #73d13d;
+            border-color: #52c41a;
+            text-shadow: 0 0 10px rgba(82, 196, 26, 0.3);
+        }
+        
+        .emotion-badge.neutral {
+            background: linear-gradient(135deg, rgba(24, 144, 255, 0.1), rgba(24, 144, 255, 0.2));
+            color: #40a9ff;
+            border-color: #1890ff;
+            text-shadow: 0 0 10px rgba(24, 144, 255, 0.3);
+        }
+        
+        .emotion-badge.negative {
+            background: linear-gradient(135deg, rgba(255, 77, 79, 0.1), rgba(255, 77, 79, 0.2));
+            color: #ff7875;
+            border-color: #ff4d4f;
+            text-shadow: 0 0 10px rgba(255, 77, 79, 0.3);
+        }
+        
+        /* 状态标签样式 */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid transparent;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status-badge.completed {
+            background: linear-gradient(135deg, rgba(82, 196, 26, 0.1), rgba(82, 196, 26, 0.2));
+            color: #73d13d;
+            border-color: #52c41a;
+            text-shadow: 0 0 10px rgba(82, 196, 26, 0.3);
+        }
+        
+        .status-badge.archived {
+            background: linear-gradient(135deg, rgba(153, 153, 153, 0.1), rgba(153, 153, 153, 0.2));
+            color: #bfbfbf;
+            border-color: #999;
+        }
+        
+        .status-badge.warning {
+            background: linear-gradient(135deg, rgba(250, 140, 22, 0.1), rgba(250, 140, 22, 0.2));
+            color: #ffb020;
+            border-color: #fa8c16;
+            text-shadow: 0 0 10px rgba(250, 140, 22, 0.3);
+        }
+        
+        /* 操作按钮样式 */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-buttons button {
+            padding: 6px 12px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-buttons button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.3s ease;
+        }
+        
+        .action-buttons button:hover::before {
+            left: 100%;
+        }
+        
+        .btn-view {
+            background: linear-gradient(135deg, #1890ff, #40a9ff);
+            color: white;
+            border-color: #1890ff;
+            box-shadow: 0 0 10px rgba(24, 144, 255, 0.3);
+        }
+        
+        .btn-view:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(24, 144, 255, 0.5);
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, rgba(255, 77, 79, 0.1), rgba(255, 77, 79, 0.2));
+            color: #ff7875;
+            border-color: #ff4d4f;
+        }
+        
+        .btn-delete:hover {
+            background: linear-gradient(135deg, var(--honor-danger), #ff7875);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(255, 77, 79, 0.5);
+        }
+        
+        .btn-archive {
+            background: linear-gradient(135deg, rgba(250, 140, 22, 0.1), rgba(250, 140, 22, 0.2));
+            color: #ffb020;
+            border-color: #fa8c16;
+        }
+        
+        .btn-archive:hover {
+            background: linear-gradient(135deg, #fa8c16, #ffb020);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(250, 140, 22, 0.5);
+        }
+        
+        /* 分页样式 - 王者荣耀风格 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(30, 30, 58, 0.8);
+            border-radius: 10px;
+            border: 1px solid var(--honor-border);
+        }
+        
+        .pagination .btn {
+            padding: 8px 16px;
+            border: 2px solid var(--honor-border);
+            background: linear-gradient(135deg, var(--honor-dark), #2d2d4a);
+            color: var(--honor-text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .pagination .btn:hover:not(:disabled) {
+            border-color: var(--honor-secondary);
+            color: var(--honor-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+        }
+        
+        .pagination .btn.active {
+            background: linear-gradient(135deg, var(--honor-primary), #e53e3e);
+            color: white;
+            border-color: var(--honor-primary);
+            box-shadow: 0 0 15px rgba(200, 22, 29, 0.5);
+        }
+        
+        .pagination .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        /* 数据卡片 - 王者荣耀风格 */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeInUp 0.5s ease-out 0.3s forwards;
+        }
+        
+        /* 数据卡片 - 王者荣耀高级风格 */
+        .stat-card {
+            background: linear-gradient(135deg, var(--honor-dark), #1a1a3a);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid var(--honor-border);
+            box-shadow: 
+                0 6px 20px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            touch-action: manipulation; /* 防止双击缩放 */
+        }
+        
+        /* 数据卡片装饰效果 */
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--honor-primary), var(--honor-secondary));
+            z-index: 2;
+        }
+        
+        /* 卡片背景装饰 */
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(200, 22, 29, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 90% 80%, rgba(224, 224, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* 卡片悬浮效果 */
+        .stat-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(200, 22, 29, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 数据图标 - 王者荣耀风格 */
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 
+                0 4px 15px rgba(0, 0, 0, 0.4),
+                0 0 20px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+            animation: iconGlow 4s ease-in-out infinite alternate;
+        }
+        
+        /* 图标发光效果 */
+        @keyframes iconGlow {
+            0% {
+                box-shadow: 
+                    0 4px 15px rgba(0, 0, 0, 0.4),
+                    0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            100% {
+                box-shadow: 
+                    0 4px 15px rgba(0, 0, 0, 0.4),
+                    0 0 30px rgba(255, 255, 255, 0.2);
+            }
+        }
+        
+        /* 图标点击效果 */
+        .stat-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            pointer-events: none;
+        }
+        
+        .stat-card:hover .stat-icon::after {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        /* 正面情绪图标 */
+        .stat-icon.positive {
+            background: linear-gradient(135deg, #52c41a, #73d13d);
+            box-shadow: 
+                0 0 25px rgba(82, 196, 26, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 中性情绪图标 */
+        .stat-icon.neutral {
+            background: linear-gradient(135deg, #1890ff, #40a9ff);
+            box-shadow: 
+                0 0 25px rgba(24, 144, 255, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 负面情绪图标 */
+        .stat-icon.negative {
+            background: linear-gradient(135deg, #ff4d4f, #ff7875);
+            box-shadow: 
+                0 0 25px rgba(255, 77, 79, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 数据内容样式 */
+        .stat-content {
+            flex: 1;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .stat-content h3 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--honor-text);
+            text-shadow: 
+                0 0 20px rgba(224, 224, 255, 0.4),
+                0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover .stat-content h3 {
+            text-shadow: 
+                0 0 30px rgba(224, 224, 255, 0.6),
+                0 2px 4px rgba(0, 0, 0, 0.3);
+            transform: translateX(5px);
+        }
+        
+        .stat-content p {
+            font-size: 16px;
+            color: var(--honor-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover .stat-content p {
+            color: var(--honor-secondary);
+            transform: translateX(5px);
+        }
+        
+        /* 数据卡片动画效果 */
+        @keyframes statNumberGrow {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .stat-card h3 {
+            animation: statNumberGrow 0.5s ease-out;
+        }
+        
+        /* 图表区域 - 王者荣耀风格 */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeInUp 0.5s ease-out 0.4s forwards;
+        }
+        
+        .chart-card {
+            background: linear-gradient(135deg, var(--honor-dark), #1a1a3a);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--honor-border);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 320px;
+        }
+        
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--honor-primary), var(--honor-secondary));
+        }
+        
+        .chart-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--honor-text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 10px rgba(224, 224, 255, 0.2);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 320px;
+        }
+        
+        /* 图表容器装饰效果 */
+        .chart-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(200, 22, 29, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        /* 对话区域 - 王者荣耀风格 */
+        .conversation-section {
+            background: linear-gradient(135deg, var(--honor-dark), #1a1a3a);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--honor-border);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            animation: fadeInUp 0.5s ease-out 0.5s forwards;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .conversation-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--honor-primary), var(--honor-secondary));
+        }
+        
+        /* 对话区域标题 - 王者荣耀风格 */
+        .conversation-section h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--honor-text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 10px rgba(224, 224, 255, 0.2);
+        }
+        
+        /* 对话列表 - 王者荣耀风格 */
+        .conversation-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 25px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--honor-secondary) var(--honor-dark);
+        }
+        
+        /* 自定义滚动条 */
+        .conversation-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .conversation-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        
+        .conversation-list::-webkit-scrollbar-thumb {
+            background: var(--honor-secondary);
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+        
+        .conversation-list::-webkit-scrollbar-thumb:hover {
+            background: var(--honor-primary);
+        }
+        
+        /* 消息气泡 - 王者荣耀风格 */
+        .message-bubble {
+            margin-bottom: 20px;
+            animation: messageAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: bottom center;
+            position: relative;
+        }
+        
+        .message-bubble.user {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .message-bubble.bot {
+            display: flex;
+            justify-content: flex-start;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 16px 22px;
+            border-radius: 16px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 2px solid transparent;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 消息气泡边框发光效果 */
+        .message-content::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 18px;
+            background: linear-gradient(45deg, transparent, transparent 40%, rgba(255, 255, 255, 0.1), transparent 60%, transparent);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .message-content:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(200, 22, 29, 0.2);
+        }
+        
+        .message-content:hover::before {
+            opacity: 1;
+            animation: borderGlow 1.5s infinite;
+        }
+        
+        /* 用户消息气泡 - 王者荣耀英雄主题 */
+        .user .message-content {
+            background: linear-gradient(135deg, #c8161d, #8b0000);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(200, 22, 29, 0.2);
+        }
+        
+        .user .message-content::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.2) 0%, transparent 60%),
+                linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+            pointer-events: none;
+        }
+        
+        /* 机器人消息气泡 - 王者荣耀守卫主题 */
+        .bot .message-content {
+            background: linear-gradient(135deg, var(--honor-dark), #2a2a4a);
+            color: var(--honor-text);
+            border-color: var(--honor-border);
+            box-shadow: 0 4px 15px rgba(128, 128, 255, 0.1);
+        }
+        
+        .bot .message-content::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(224, 224, 255, 0.1) 0%, transparent 60%),
+                linear-gradient(135deg, transparent 0%, rgba(128, 128, 255, 0.05) 50%, transparent 100%);
+            pointer-events: none;
+        }
+        
+        /* 情感指示器 - 王者荣耀风格增强 */
+        .emotion-indicator {
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 3px solid rgba(0, 0, 0, 0.9);
+            box-shadow: 
+                0 0 12px rgba(255, 255, 255, 0.3),
+                inset 0 0 5px rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .message-content:hover .emotion-indicator {
+            transform: scale(1.1);
+        }
+        
+        .emotion-indicator.positive {
+            background: linear-gradient(135deg, #52c41a, #73d13d);
+            animation: pulse 2s infinite, glowEffect 1.5s infinite;
+            box-shadow: 
+                0 0 12px rgba(82, 196, 26, 0.5),
+                inset 0 0 5px rgba(255, 255, 255, 0.3),
+                0 0 15px rgba(255, 255, 255, 0.3);
+        }
+        
+        .emotion-indicator.neutral {
+            background: linear-gradient(135deg, #1890ff, #40a9ff);
+            animation: glowEffect 2s infinite alternate;
+            box-shadow: 
+                0 0 12px rgba(24, 144, 255, 0.4),
+                inset 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+        
+        .emotion-indicator.negative {
+            background: linear-gradient(135deg, #ff4d4f, #ff7875);
+            animation: blink 1s infinite, glowEffect 1s infinite;
+            box-shadow: 
+                0 0 12px rgba(255, 77, 79, 0.5),
+                inset 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+        
+        .emotion-indicator.extreme {
+            background: linear-gradient(135deg, #9c27b0, #e040fb);
+            animation: shake 0.5s infinite, glowEffect 0.8s infinite;
+            box-shadow: 
+                0 0 20px rgba(156, 39, 176, 0.6),
+                inset 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+        
+        /* 消息输入区域 - 王者荣耀风格增强 */
+        .message-input {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            position: relative;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 25px;
+            border: 1px solid var(--honor-border);
+        }
+        
+        .message-input input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid transparent;
+            border-radius: 22px;
+            font-size: 14px;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            color: var(--honor-text);
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .message-input input:focus {
+            border-color: var(--honor-primary);
+            box-shadow: 
+                inset 0 2px 10px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(200, 22, 29, 0.4);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1));
+        }
+        
+        .message-input input::placeholder {
+            color: rgba(224, 224, 255, 0.6);
+        }
+        
+        /* 发送按钮 - 王者荣耀风格 */
+        .message-input button {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, var(--honor-primary), #ff3333);
+            color: white;
+            border: none;
+            border-radius: 22px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(200, 22, 29, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .message-input button::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, transparent, transparent 40%, rgba(255, 255, 255, 0.3), transparent 60%, transparent);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .message-input button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(200, 22, 29, 0.5), 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+        
+        .message-input button:hover::before {
+            opacity: 1;
+            animation: borderGlow 1.5s infinite;
+        }
+        
+        .message-input button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(200, 22, 29, 0.4);
+        }
+        
+        .message-input button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* 消息气泡装饰角 */
+        .user .message-content::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: -10px;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, transparent 50%, #c8161d 50%);
+            clip-path: polygon(100% 0, 0% 100%, 100% 100%);
+            border: none;
+            z-index: 1;
+        }
+        
+        .bot .message-content::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -10px;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--honor-dark) 50%, transparent 50%);
+            clip-path: polygon(0% 0, 0% 100%, 100% 100%);
+            border: none;
+            z-index: 1;
+        }
+        
+        /* 底部状态栏 */
+        .status-bar {
+            height: 40px;
+            background-color: #fff;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #999;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out 0.6s forwards;
+        }
+        
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #52c41a;
+        }
+        
+        /* 加载动画 */
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            position: relative;
+        }
+        
+        .loader::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid transparent;
+            border-top-color: #1890ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loader-wave {
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .loader-wave span {
+            width: 4px;
+            height: 10px;
+            background-color: #1890ff;
+            border-radius: 2px;
+            animation: wave 1.2s ease-in-out infinite;
+        }
+        
+        .loader-wave span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .loader-wave span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        .loader-wave span:nth-child(4) {
+            animation-delay: 0.6s;
+        }
+        
+        .loader-wave span:nth-child(5) {
+            animation-delay: 0.8s;
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 6px rgba(82, 196, 26, 0);
+            }
+        }
+        
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-2px);
+            }
+            75% {
+                transform: translateX(2px);
+            }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes wave {
+            0%, 40%, 100% {
+                transform: scaleY(0.4);
+            }
+            20% {
+                transform: scaleY(1);
+            }
+        }
+        
+        /* 新添加的动画关键帧 */
+        @keyframes borderGlow {
+            0% {
+                background-position: 0% 0%;
+                opacity: 0.5;
+            }
+            50% {
+                background-position: 100% 100%;
+                opacity: 1;
+            }
+            100% {
+                background-position: 0% 0%;
+                opacity: 0.5;
+            }
+        }
+        
+        @keyframes glowEffect {
+            0% {
+                box-shadow: 
+                    0 0 10px rgba(255, 255, 255, 0.3),
+                    inset 0 0 5px rgba(255, 255, 255, 0.3);
+            }
+            50% {
+                box-shadow: 
+                    0 0 20px rgba(255, 255, 255, 0.6),
+                    inset 0 0 8px rgba(255, 255, 255, 0.5);
+            }
+            100% {
+                box-shadow: 
+                    0 0 10px rgba(255, 255, 255, 0.3),
+                    inset 0 0 5px rgba(255, 255, 255, 0.3);
+            }
+        }
+        
+        /* 导航菜单动画效果 */
+        @keyframes activeNavGlow {
+            0% {
+                box-shadow: 
+                    0 0 15px rgba(200, 22, 29, 0.5),
+                    0 0 8px rgba(255, 255, 255, 0.1),
+                    inset 0 0 15px rgba(255, 255, 255, 0.05);
+            }
+            100% {
+                box-shadow: 
+                    0 0 25px rgba(200, 22, 29, 0.8),
+                    0 0 15px rgba(255, 255, 255, 0.3),
+                    inset 0 0 25px rgba(255, 255, 255, 0.15);
+            }
+        }
+        
+        @keyframes borderPulse {
+            0% {
+                width: 4px;
+                opacity: 0.8;
+                box-shadow: 0 0 10px var(--honor-primary);
+            }
+            50% {
+                width: 5px;
+                opacity: 1;
+                box-shadow: 0 0 20px var(--honor-primary), 0 0 10px rgba(255, 255, 255, 0.3);
+            }
+            100% {
+                width: 4px;
+                opacity: 0.8;
+                box-shadow: 0 0 10px var(--honor-primary);
+            }
+        }
+        
+        @keyframes skillReadyPulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 10px #52c41a;
+            }
+            50% {
+                transform: scale(1.2);
+                box-shadow: 0 0 20px #52c41a, 0 0 10px rgba(82, 196, 26, 0.5);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 10px #52c41a;
+            }
+        }
+        
+        @keyframes skillActivePulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 15px var(--honor-secondary);
+            }
+            50% {
+                transform: scale(1.3);
+                box-shadow: 0 0 25px var(--honor-secondary), 0 0 15px rgba(224, 224, 255, 0.5);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 15px var(--honor-secondary);
+            }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            /* 显示汉堡菜单按钮 */
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            /* 优化侧边栏行为 */
+            .sidebar {
+                width: 280px;
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1.000);
+                box-shadow: 2px 0 20px rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(10px);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            /* 优化主内容区域 */
+            .main-content {
+                padding: 15px;
+                margin-left: 0;
+                width: 100%;
+                min-height: 100vh;
+                transition: transform 0.3s ease;
+            }
+            
+            /* 当侧边栏打开时，给主内容添加一些偏移 */
+            .main-content.sidebar-open {
+                transform: translateX(280px);
+            }
+            
+            /* 图表容器响应式布局 */
+            .charts-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            /* 数据卡片响应式布局 */
+            .stats-cards {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            /* 移动设备数据卡片样式优化 */
+            .stat-card {
+                padding: 20px;
+                gap: 15px;
+                min-height: 120px;
+            }
+            
+            .stat-card .stat-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+            
+            .stat-card .stat-value {
+                font-size: 24px;
+            }
+            
+            .stat-card .stat-label {
+                font-size: 14px;
+            }
+            
+            /* 移动设备图表容器优化 */
+            .chart-card {
+                padding: 20px;
+            }
+            
+            .chart-card h3 {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+            
+            /* 优化图表标签和交互 */
+            .chart-container canvas {
+                max-width: 100%;
+                height: auto !important;
+            }
+            
+            /* 优化对话区域在移动设备上的体验 */
+            .conversation-section {
+                padding: 20px;
+            }
+            
+            .conversation-section h3 {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+            
+            /* 调整对话列表高度 */
+            .conversation-list {
+                max-height: 300px;
+            }
+            
+            /* 消息气泡优化 */
+            .message-bubble {
+                margin-bottom: 15px;
+            }
+            
+            .message-content {
+                max-width: 85%;
+                font-size: 14px;
+                padding: 12px 16px;
+                border-radius: 14px;
+                touch-action: manipulation;
+            }
+            
+            /* 优化用户和机器人消息气泡 */
+            .user .message-content,
+            .bot .message-content {
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            }
+            
+            /* 消息气泡装饰效果简化 */
+            .message-content::before {
+                display: none;
+            }
+            
+            /* 输入区域优化 */
+            .message-input {
+                padding: 8px;
+                gap: 10px;
+            }
+            
+            .message-input input {
+                padding: 12px 16px;
+                font-size: 14px;
+                border-radius: 20px;
+            }
+            
+            /* 发送按钮优化 */
+            .message-input button {
+                padding: 12px 20px;
+                font-size: 14px;
+                border-radius: 20px;
+                min-width: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* 简化按钮效果 */
+            .message-input button::before {
+                display: none;
+            }
+            
+            /* 优化触摸反馈 */
+            .message-input button:active {
+                transform: scale(0.95);
+                transition: transform 0.1s ease;
+            }
+            
+            /* 简化动画效果，提高性能 */
+            @keyframes messageAppear {
+                from {
+                    opacity: 0;
+                    transform: scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+            
+            /* 工具栏优化 */
+            .toolbar {
+                padding: 10px 15px;
+                margin-bottom: 15px;
+            }
+            
+            .toolbar h2 {
+                font-size: 18px;
+            }
+            
+            /* 按钮尺寸优化 */
+            .btn {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+            
+            /* 移动端遮罩层 */
+            .sidebar-backdrop {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 999;
+                display: none;
+                backdrop-filter: blur(2px);
+            }
+            
+            .sidebar-backdrop.show {
+                display: block;
+            }
+        }
+        
+        /* 平板设备响应式设计 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sidebar {
+                width: 220px;
+            }
+            
+            .main-content {
+                margin-left: 220px;
+            }
+            
+            .stats-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 左侧导航栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fa fa-line-chart"></i> 情感分析系统</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#" class="active"><i class="fa fa-dashboard"></i> 实时分析</a></li>
+                <li><a href="#"><i class="fa fa-history"></i> 历史记录</a></li>
+                <li><a href="#"><i class="fa fa-file-text-o"></i> 报告中心</a></li>
+                <li><a href="#"><i class="fa fa-cogs"></i> 模型管理</a></li>
+                <li><a href="#"><i class="fa fa-cog"></i> 设置中心</a></li>
+            </ul>
+        </aside>
+        
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <!-- 顶部工具栏 -->
+            <div class="toolbar" id="mainToolbar">
+                <div class="toolbar-left">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa fa-bars"></i></button>
+                    <h2>实时情感分析</h2>
+                </div>
+                <div class="toolbar-actions">
+                    <button class="btn btn-default"><i class="fa fa-download"></i> 导出报告</button>
+                    <button class="btn btn-primary"><i class="fa fa-plus"></i> 新建会话</button>
+                </div>
+            </div>
+            
+            <!-- 历史记录内容区域（初始隐藏） -->
+            <div class="history-content" id="historyContent" style="display: none;">
+                <div class="toolbar">
+                    <h2>历史记录</h2>
+                    <div class="toolbar-actions">
+                        <div class="search-filter">
+                            <input type="text" id="historySearch" placeholder="搜索记录..." class="search-input">
+                            <select id="historyFilter" class="filter-select">
+                                <option value="all">全部记录</option>
+                                <option value="today">今日</option>
+                                <option value="week">本周</option>
+                                <option value="month">本月</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-default"><i class="fa fa-refresh"></i> 刷新</button>
+                        <button class="btn btn-primary"><i class="fa fa-archive"></i> 归档</button>
+                    </div>
+                </div>
+                
+                <div class="history-stats">
+                    <div class="history-stats-item">
+                        <span class="history-stats-label">总记录数：</span>
+                        <span class="history-stats-value">246</span>
+                    </div>
+                    <div class="history-stats-item">
+                        <span class="history-stats-label">今日新增：</span>
+                        <span class="history-stats-value">18</span>
+                    </div>
+                    <div class="history-stats-item">
+                        <span class="history-stats-label">异常记录：</span>
+                        <span class="history-stats-value highlight">12</span>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>会话ID</th>
+                                <th>开始时间</th>
+                                <th>结束时间</th>
+                                <th>对话条数</th>
+                                <th>主要情感</th>
+                                <th>积极度</th>
+                                <th>消极度</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- 历史记录数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="pagination">
+                    <button class="btn btn-default" disabled><i class="fa fa-angle-left"></i> 上一页</button>
+                    <button class="btn btn-default active">1</button>
+                    <button class="btn btn-default">2</button>
+                    <button class="btn btn-default">3</button>
+                    <button class="btn btn-default">4</button>
+                    <button class="btn btn-default">5</button>
+                    <button class="btn btn-default"><i class="fa fa-angle-right"></i> 下一页</button>
+                </div>
+            </div>
+            
+            <!-- 数据卡片 -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon positive"><i class="fa fa-smile-o"></i></div>
+                    <div class="stat-content">
+                        <h3>142</h3>
+                        <p>积极情感</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon neutral"><i class="fa fa-meh-o"></i></div>
+                    <div class="stat-content">
+                        <h3>87</h3>
+                        <p>中性情感</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon negative"><i class="fa fa-frown-o"></i></div>
+                    <div class="stat-content">
+                        <h3>34</h3>
+                        <p>消极情感</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon neutral"><i class="fa fa-bell-o"></i></div>
+                    <div class="stat-content">
+                        <h3>8</h3>
+                        <p>异常预警</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 图表区域 -->
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3>情感变化趋势</h3>
+                    <div class="chart-container">
+                        <canvas id="emotionTrendChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>情感分布</h3>
+                    <div class="chart-container">
+                        <canvas id="emotionPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 对话区域 -->
+            <div class="conversation-section">
+                <h3>对话内容 <span class="loader-wave" style="display: inline-block; margin-left: 10px;"><span></span><span></span><span></span><span></span><span></span></span></h3>
+                <div class="conversation-list" id="conversationList">
+                    <div class="message-bubble user">
+                        <div class="message-content">
+                            你好，我想了解一下你们的产品功能
+                            <span class="emotion-indicator neutral"></span>
+                        </div>
+                    </div>
+                    <div class="message-bubble bot">
+                        <div class="message-content">
+                            您好！很高兴为您服务。我们的产品提供实时情感分析、数据可视化和异常预警等功能。请问您对哪个方面特别感兴趣？
+                            <span class="emotion-indicator positive"></span>
+                        </div>
+                    </div>
+                    <div class="message-bubble user">
+                        <div class="message-content">
+                            实时分析的准确性如何？有没有什么限制条件？
+                            <span class="emotion-indicator neutral"></span>
+                        </div>
+                    </div>
+                    <div class="message-bubble bot">
+                        <div class="message-content">
+                            我们的实时分析准确率达到92%以上，能够识别多种情感细微变化。主要限制是在处理极端复杂的讽刺、反语时可能需要人工审核。
+                            <span class="emotion-indicator positive"></span>
+                        </div>
+                    </div>
+                    <div class="message-bubble user">
+                        <div class="message-content">
+                            价格太贵了！你们能不能提供更经济的方案？
+                            <span class="emotion-indicator negative extreme"></span>
+                        </div>
+                    </div>
+                    <div class="message-bubble bot">
+                        <div class="message-content">
+                            非常理解您的顾虑。我们确实提供不同档次的套餐选择，针对中小企业有特别优惠。您可以告诉我贵公司的规模和需求，我来为您推荐最适合的方案。
+                            <span class="emotion-indicator positive"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="message-input">
+                    <input type="text" placeholder="输入您的问题..." id="messageInput">
+                    <button class="btn btn-primary" id="sendMessage">发送</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- 底部状态栏 -->
+    <div class="status-bar">
+        <div class="status-info">
+            <div class="status-item">
+                <span class="status-dot"></span>
+                <span>系统运行正常</span>
+            </div>
+            <div class="status-item">
+                <i class="fa fa-clock-o"></i>
+                <span id="currentTime">2024-07-22 14:30:45</span>
+            </div>
+        </div>
+        <div class="system-info">
+            版本 1.0.0 | 处理中: 5 个会话
+        </div>
+    </div>
+    
+    <script>
+        // 移动端菜单切换功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            // 创建背景遮罩
+            function createBackdrop() {
+                let backdrop = document.querySelector('.sidebar-backdrop');
+                if (!backdrop) {
+                    backdrop = document.createElement('div');
+                    backdrop.className = 'sidebar-backdrop';
+                    backdrop.addEventListener('click', toggleSidebar);
+                    document.body.appendChild(backdrop);
+                }
+                return backdrop;
+            }
+            
+            // 切换侧边栏显示状态
+            function toggleSidebar() {
+                // 确保在移动设备上才执行
+                if (window.innerWidth <= 768) {
+                    const backdrop = createBackdrop();
+                    
+                    sidebar.classList.toggle('sidebar-open');
+                    mainContent.classList.toggle('sidebar-open');
+                    
+                    if (sidebar.classList.contains('sidebar-open')) {
+                        // 显示侧边栏
+                        backdrop.style.display = 'block';
+                        // 阻止页面滚动
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        // 隐藏侧边栏
+                        backdrop.style.display = 'none';
+                        // 允许页面滚动
+                        document.body.style.overflow = 'auto';
+                    }
+                }
+            }
+            
+            // 点击汉堡菜单按钮切换侧边栏
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+            }
+            
+            // ESC键关闭侧边栏
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sidebar.classList.contains('sidebar-open')) {
+                    toggleSidebar();
+                }
+            });
+            
+            // 屏幕尺寸变化时自动关闭侧边栏
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768 && sidebar.classList.contains('sidebar-open')) {
+                    toggleSidebar();
+                }
+            });
+        });
+        
+        // 更新当前时间
+        function updateCurrentTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('currentTime').textContent = 
+                `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+        
+        setInterval(updateCurrentTime, 1000);
+        updateCurrentTime();
+        
+        // 初始化情感趋势图表 - 王者荣耀风格
+        const trendCtx = document.getElementById('emotionTrendChart').getContext('2d');
+        
+        // 定义王者荣耀风格的图表颜色
+        const honorColors = {
+            positive: {
+                border: '#52c41a',
+                background: 'rgba(82, 196, 26, 0.2)',
+                glow: 'rgba(82, 196, 26, 0.5)'
+            },
+            neutral: {
+                border: '#1890ff',
+                background: 'rgba(24, 144, 255, 0.2)',
+                glow: 'rgba(24, 144, 255, 0.5)'
+            },
+            negative: {
+                border: '#ff4d4f',
+                background: 'rgba(255, 77, 79, 0.2)',
+                glow: 'rgba(255, 77, 79, 0.5)'
+            }
+        };
+        
+        const trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00'],
+                datasets: [
+                    {
+                        label: '积极情感',
+                        data: [15, 22, 30, 25, 35, 40, 38, 45, 52],
+                        borderColor: honorColors.positive.border,
+                        backgroundColor: honorColors.positive.background,
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: honorColors.positive.border,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: honorColors.positive.glow
+                    },
+                    {
+                        label: '中性情感',
+                        data: [10, 15, 18, 20, 15, 25, 22, 28, 30],
+                        borderColor: honorColors.neutral.border,
+                        backgroundColor: honorColors.neutral.background,
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: honorColors.neutral.border,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: honorColors.neutral.glow
+                    },
+                    {
+                        label: '消极情感',
+                        data: [5, 8, 6, 10, 8, 5, 12, 10, 8],
+                        borderColor: honorColors.negative.border,
+                        backgroundColor: honorColors.negative.background,
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: honorColors.negative.border,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: honorColors.negative.glow
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e0e0ff',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            padding: 20,
+                            boxWidth: 15,
+                            boxHeight: 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(26, 26, 58, 0.9)',
+                        titleColor: '#e0e0ff',
+                        bodyColor: '#e0e0ff',
+                        borderColor: '#c8161d',
+                        borderWidth: 1,
+                        padding: 15,
+                        cornerRadius: 8,
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        displayColors: true,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.raw;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)',
+                            borderDash: [5, 5]
+                        },
+                        ticks: {
+                            color: '#a0a0d0',
+                            font: {
+                                size: 12
+                            },
+                            padding: 10
+                        },
+                        border: {
+                            color: 'rgba(255, 255, 255, 0.2)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#a0a0d0',
+                            font: {
+                                size: 12
+                            },
+                            padding: 10
+                        },
+                        border: {
+                            color: 'rgba(255, 255, 255, 0.2)'
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart',
+                    onProgress: function(animation) {
+                        // 添加辉光效果
+                        if (animation.currentStep === animation.numSteps - 1) {
+                            trendCtx.shadowColor = '#c8161d';
+                            trendCtx.shadowBlur = 10;
+                        }
+                    }
+                },
+                elements: {
+                    line: {
+                        borderWidth: 3
+                    }
+                }
+            }
+        });
+        
+        // 初始化情感分布饼图 - 王者荣耀风格
+        const pieCtx = document.getElementById('emotionPieChart').getContext('2d');
+        const pieChart = new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['积极情感', '中性情感', '消极情感'],
+                datasets: [{
+                    data: [142, 87, 34],
+                    backgroundColor: [
+                        honorColors.positive.border,
+                        honorColors.neutral.border,
+                        honorColors.negative.border
+                    ],
+                    borderColor: '#1a1a3a',
+                    borderWidth: 3,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%', // 甜甜圈大小
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#e0e0ff',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            padding: 25,
+                            boxWidth: 15,
+                            boxHeight: 15,
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const meta = chart.getDatasetMeta(0);
+                                        const ds = data.datasets[0];
+                                        const arc = meta.data[i];
+                                        return {
+                                            text: label,
+                                            fillStyle: ds.backgroundColor[i],
+                                            strokeStyle: ds.borderColor,
+                                            lineWidth: ds.borderWidth,
+                                            hidden: !arc.hidden,
+                                            index: i,
+                                            pointStyle: 'circle'
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(26, 26, 58, 0.9)',
+                        titleColor: '#e0e0ff',
+                        bodyColor: '#e0e0ff',
+                        borderColor: '#c8161d',
+                        borderWidth: 1,
+                        padding: 15,
+                        cornerRadius: 8,
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 2000,
+                    easing: 'easeOutQuart',
+                    onProgress: function(animation) {
+                        // 添加辉光效果
+                        if (animation.currentStep === animation.numSteps - 1) {
+                            pieCtx.shadowColor = '#c8161d';
+                            pieCtx.shadowBlur = 15;
+                        }
+                    }
+                },
+                elements: {
+                    arc: {
+                        borderRadius: 8, // 圆角效果
+                        hoverOffset: 20, // 悬停时的偏移距离
+                        hoverBorderWidth: 5
+                    }
+                },
+                // 添加互动效果
+                hover: {
+                    mode: 'nearest',
+                    intersect: true
+                }
+            }
+        });
+        
+        // 发送消息功能
+        document.getElementById('sendMessage').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                const conversationList = document.getElementById('conversationList');
+                
+                // 分析用户消息情感
+                const userEmotion = analyzeEmotion(message);
+                
+                // 添加用户消息
+                const userBubble = document.createElement('div');
+                userBubble.className = 'message-bubble user';
+                userBubble.innerHTML = `
+                    <div class="message-content">
+                        ${escapeHTML(message)}
+                        <span class="emotion-indicator ${userEmotion}"></span>
+                    </div>
+                `;
+                conversationList.appendChild(userBubble);
+                
+                // 清空输入框
+                messageInput.value = '';
+                
+                // 自动滚动到底部
+                conversationList.scrollTop = conversationList.scrollHeight;
+                
+                // 显示"正在输入"状态
+                const typingIndicator = document.createElement('div');
+                typingIndicator.className = 'message-bubble bot typing';
+                typingIndicator.innerHTML = `
+                    <div class="message-content">
+                        <div class="typing-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                `;
+                conversationList.appendChild(typingIndicator);
+                conversationList.scrollTop = conversationList.scrollHeight;
+                
+                // 模拟AI回复
+                setTimeout(() => {
+                    // 移除"正在输入"状态
+                    conversationList.removeChild(typingIndicator);
+                    
+                    // 获取智能回复
+                    const botResponse = generateSmartResponse(message);
+                    
+                    const botBubble = document.createElement('div');
+                    botBubble.className = 'message-bubble bot';
+                    botBubble.innerHTML = `
+                        <div class="message-content">
+                            ${botResponse.text}
+                            <span class="emotion-indicator ${botResponse.emotion}"></span>
+                        </div>
+                    `;
+                    conversationList.appendChild(botBubble);
+                    
+                    // 自动滚动到底部
+                    conversationList.scrollTop = conversationList.scrollHeight;
+                    
+                    // 更新情感数据统计
+                    updateEmotionStats(botResponse.emotion, userBubble.querySelector('.emotion-indicator').className.split(' ')[1]);
+                }, 1500 + Math.random() * 1000);
+            }
+        }
+        
+        // 生成智能回复
+        function generateSmartResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // 关键词匹配规则
+            const responseRules = [
+                // 问候类
+                { pattern: /你好|您好|嗨|哈喽/, responses: [
+                    { text: '您好！很高兴为您服务。请问有什么可以帮助您的？', emotion: 'positive' },
+                    { text: '嗨！欢迎使用情感分析系统。请问您想了解什么？', emotion: 'positive' }
+                ]},
+                // 价格类
+                { pattern: /价格|费用|收费|多少钱/, responses: [
+                    { text: '我们提供多种灵活的价格方案，从免费试用版到企业级解决方案都有。请问您需要什么规模的服务？', emotion: 'neutral' },
+                    { text: '价格取决于您的具体需求和使用量。我们有针对不同规模企业的优化方案，您可以告诉我您的预算范围，我为您推荐最合适的选择。', emotion: 'neutral' }
+                ]},
+                // 功能类
+                { pattern: /功能|特性|能做什么/, responses: [
+                    { text: '我们的系统提供实时情感分析、数据可视化报告、异常预警等核心功能。特别擅长识别客户反馈中的情绪变化和潜在问题。', emotion: 'positive' },
+                    { text: '我们的主要功能包括：多语言情感识别、上下文分析、趋势预测和智能预警。您可以体验一下实时分析功能，输入任何文本都能立即得到分析结果。', emotion: 'positive' }
+                ]},
+                // 准确率类
+                { pattern: /准确|准确率|可靠/, responses: [
+                    { text: '我们的系统准确率达到92%以上，采用深度学习模型，持续优化识别能力。当然，在处理复杂的讽刺、反语等情况时，我们也在不断改进。', emotion: 'positive' },
+                    { text: '准确率是我们的核心优势，基于千万级数据集训练的模型能有效识别各种情感细微变化。我们还提供人工复核功能，确保重要分析的准确性。', emotion: 'positive' }
+                ]},
+                // 抱怨/负面反馈类
+                { pattern: /不好|太慢|不行|贵|差/, responses: [
+                    { text: '非常抱歉给您带来不好的体验。请您详细说明遇到的问题，我们会认真改进并为您提供解决方案。', emotion: 'neutral' },
+                    { text: '感谢您的坦诚反馈。我们一直在努力提升产品体验，如果您能具体指出问题，我们会优先处理并尽快改进。', emotion: 'neutral' }
+                ]},
+                // 技术问题类
+                { pattern: /技术|API|集成|对接/, responses: [
+                    { text: '我们提供完整的API文档和SDK，支持主流编程语言。集成过程通常只需1-2天，我们的技术团队也可以提供免费的集成支持。', emotion: 'positive' },
+                    { text: '技术集成方面我们有成熟的方案，支持REST API和WebSocket两种方式。您可以访问我们的开发者中心获取详细文档和示例代码。', emotion: 'positive' }
+                ]},
+                // 帮助类
+                { pattern: /帮助|使用|教程/, responses: [
+                    { text: '您可以访问我们的帮助中心获取详细教程。也可以告诉我具体的使用问题，我会为您提供针对性的指导。', emotion: 'neutral' },
+                    { text: '我们有详细的用户手册和视频教程。另外，您也可以预约我们的产品专家进行一对一的演示和培训。', emotion: 'neutral' }
+                ]}
+            ];
+            
+            // 尝试匹配规则
+            for (const rule of responseRules) {
+                if (rule.pattern.test(lowerMessage)) {
+                    const randomIndex = Math.floor(Math.random() * rule.responses.length);
+                    return rule.responses[randomIndex];
+                }
+            }
+            
+            // 默认回复
+            const defaultResponses = [
+                { text: '感谢您的提问。我理解您的需求，我们的情感分析系统能够为您提供专业的分析服务。如果您有具体问题，请随时告诉我。', emotion: 'neutral' },
+                { text: '我已记录您的问题。情感分析是我们的专长，我们可以帮助您深入了解文本背后的情感色彩和隐含信息。', emotion: 'neutral' },
+                { text: '您提出了一个很好的问题。我们的系统不仅能识别基本情感，还能分析情感强度和变化趋势。', emotion: 'neutral' }
+            ];
+            
+            const randomIndex = Math.floor(Math.random() * defaultResponses.length);
+            return defaultResponses[randomIndex];
+        }
+        
+        // 基于内容的情感分析函数
+        function analyzeEmotion(text) {
+            const lowerText = text.toLowerCase();
+            
+            // 情感词典 - 关键词匹配
+            const emotionKeywords = {
+                positive: [
+                    '好', '棒', '优秀', '满意', '喜欢', '赞', '感谢', '谢谢', 
+                    '高兴', '愉快', '精彩', '出色', '支持', '认可', '成功',
+                    'perfect', 'good', 'great', 'excellent', 'amazing', 'thanks',
+                    'happy', 'love', 'like', 'support', 'satisfied', 'awesome'
+                ],
+                negative: [
+                    '差', '不好', '烂', '失望', '讨厌', '贵', '贵了', '贵死了',
+                    '贵贵', '贵贵贵', '贵的', '太贵', '太贵了', '太贵贵', '太贵贵贵',
+                    '慢', '卡顿', '不行', '失败', '问题', '错误', '崩溃',
+                    '垃圾', '废', '差', '差了', '差死了', '差差', '差差差',
+                    '生气', '难过', '糟糕', '差评', '投诉',
+                    'bad', 'poor', 'terrible', 'expensive', 'slow', 'problem',
+                    'error', 'crash', 'hate', 'disappointed', 'angry', 'sad',
+                    'worst', 'complain'
+                ]
+            };
+            
+            // 计数匹配
+            let positiveCount = 0;
+            let negativeCount = 0;
+            
+            // 特殊处理极端负面词汇（用于识别extreme状态）
+            const extremeNegativePatterns = /(非常差|特别差|极差|太烂了|太垃圾了|根本不行|完全失败|严重问题|无法接受|极其不满|超级贵|贵得离谱|贵到吐血)/i;
+            const isExtreme = extremeNegativePatterns.test(text);
+            
+            // 匹配积极词汇
+            for (const keyword of emotionKeywords.positive) {
+                if (lowerText.includes(keyword)) {
+                    positiveCount++;
+                }
+            }
+            
+            // 匹配消极词汇
+            for (const keyword of emotionKeywords.negative) {
+                if (lowerText.includes(keyword)) {
+                    negativeCount++;
+                }
+            }
+            
+            // 基于匹配结果确定情感
+            if (isExtreme) {
+                return 'negative extreme';
+            } else if (negativeCount > positiveCount) {
+                return 'negative';
+            } else if (positiveCount > negativeCount) {
+                return 'positive';
+            } else {
+                // 平局或没有匹配，检查是否有中性指示词
+                const neutralIndicators = /(请问|询问|了解|如何|怎样|什么|哪里|何时|多少|谁|为什么|原因|介绍|说明|解释|展示|演示|示例|举例|例子|案例)/i;
+                if (neutralIndicators.test(text)) {
+                    return 'neutral';
+                }
+                
+                // 检查是否包含问号（通常表示疑问，偏中性）
+                if (text.includes('?') || text.includes('？')) {
+                    return 'neutral';
+                }
+                
+                // 默认中性
+                return 'neutral';
+            }
+        }
+        
+        // 保留原函数以兼容其他可能的调用
+        function getRandomEmotion() {
+            const emotions = ['positive', 'neutral', 'negative'];
+            return emotions[Math.floor(Math.random() * emotions.length)];
+        }
+        
+        // HTML转义函数，防止XSS攻击
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        // 更新情感统计（模拟函数）
+        function updateEmotionStats(botEmotion, userEmotion) {
+            // 这里可以实现情感统计更新逻辑
+            // 例如更新图表数据、统计数字等
+            console.log(`用户情感: ${userEmotion}, AI情感: ${botEmotion}`);
+        }
+        
+        // 添加正在输入状态的样式
+        const style = document.createElement('style');
+        style.textContent = `
+            .typing-dots {
+                display: flex;
+                gap: 5px;
+            }
+            .typing-dots span {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--honor-text);
+                opacity: 0.7;
+                animation: typingBounce 1.4s infinite ease-in-out both;
+            }
+            .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+            .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+            
+            @keyframes typingBounce {
+                0%, 80%, 100% { transform: scale(0); }
+                40% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // 为情感波形图添加流动动画效果
+        setInterval(() => {
+            if (trendChart) {
+                const newData = trendChart.data.datasets.map(dataset => {
+                    return {
+                        ...dataset,
+                        data: dataset.data.map(value => value + (Math.random() * 5 - 2.5))
+                    };
+                });
+                
+                trendChart.data.datasets = newData;
+                trendChart.update('none');
+            }
+        }, 500);
+        
+        // 历史记录功能实现
+        document.addEventListener('DOMContentLoaded', function() {
+            // 导航菜单切换
+            const navLinks = document.querySelectorAll('.nav-menu a');
+            const mainToolbar = document.getElementById('mainToolbar');
+            const historyContent = document.getElementById('historyContent');
+            const statsCards = document.querySelector('.stats-cards');
+            const chartsContainer = document.querySelector('.charts-container');
+            const conversationSection = document.querySelector('.conversation-section');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 移除所有活动状态
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    
+                    // 添加当前活动状态
+                    this.classList.add('active');
+                    
+                    // 根据点击的菜单项显示相应内容
+                    if (this.textContent.trim() === '历史记录') {
+                        // 显示历史记录内容
+                        mainToolbar.style.display = 'none';
+                        statsCards.style.display = 'none';
+                        chartsContainer.style.display = 'none';
+                        conversationSection.style.display = 'none';
+                        historyContent.style.display = 'block';
+                        
+                        // 加载历史记录数据
+                        loadHistoryData();
+                    } else {
+                        // 显示实时分析内容
+                        mainToolbar.style.display = 'flex';
+                        statsCards.style.display = 'grid';
+                        chartsContainer.style.display = 'grid';
+                        conversationSection.style.display = 'block';
+                        historyContent.style.display = 'none';
+                    }
+                });
+            });
+            
+            // 全选/取消全选
+            const selectAll = document.getElementById('selectAll');
+            if (selectAll) {
+                selectAll.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.history-table tbody input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                });
+            }
+            
+            // 搜索功能
+            const historySearch = document.getElementById('historySearch');
+            if (historySearch) {
+                historySearch.addEventListener('input', function() {
+                    filterHistoryData();
+                });
+            }
+            
+            // 筛选功能
+            const historyFilter = document.getElementById('historyFilter');
+            if (historyFilter) {
+                historyFilter.addEventListener('change', function() {
+                    filterHistoryData();
+                });
+            }
+        });
+        
+        // 加载历史记录数据
+        function loadHistoryData() {
+            const tableBody = document.getElementById('historyTableBody');
+            if (!tableBody) return;
+            
+            // 清空表格
+            tableBody.innerHTML = '';
+            
+            // 模拟历史记录数据
+            const historyData = generateMockHistoryData();
+            
+            // 添加数据到表格
+            historyData.forEach(record => {
+                const row = document.createElement('tr');
+                
+                // 计算持续时间
+                const startTime = new Date(record.startTime);
+                const endTime = new Date(record.endTime);
+                const duration = Math.floor((endTime - startTime) / 1000 / 60); // 分钟
+                
+                // 确定主要情感的样式
+                let emotionClass = 'neutral';
+                let emotionText = '中性';
+                if (record.positiveRatio > record.negativeRatio) {
+                    emotionClass = 'positive';
+                    emotionText = '积极';
+                } else if (record.negativeRatio > record.positiveRatio) {
+                    emotionClass = 'negative';
+                    emotionText = '消极';
+                }
+                
+                // 确定状态样式
+                let statusClass = 'completed';
+                let statusText = '已完成';
+                if (record.isArchived) {
+                    statusClass = 'archived';
+                    statusText = '已归档';
+                } else if (record.hasWarning) {
+                    statusClass = 'warning';
+                    statusText = '需注意';
+                }
+                
+                row.innerHTML = `
+                    <td><input type="checkbox"></td>
+                    <td>${record.id}</td>
+                    <td>${formatDate(startTime)}</td>
+                    <td>${formatDate(endTime)} (${duration}分钟)</td>
+                    <td>${record.messageCount}</td>
+                    <td><span class="emotion-badge ${emotionClass}">${emotionText}</span></td>
+                    <td>${record.positiveRatio}%</td>
+                    <td>${record.negativeRatio}%</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-view" onclick="viewHistory('${record.id}')"><i class="fa fa-eye"></i> 查看</button>
+                            <button class="btn-archive" onclick="archiveHistory('${record.id}')"><i class="fa fa-archive"></i> 归档</button>
+                            <button class="btn-delete" onclick="deleteHistory('${record.id}')"><i class="fa fa-trash"></i> 删除</button>
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // 生成模拟历史数据
+        function generateMockHistoryData() {
+            const data = [];
+            const emotions = ['positive', 'neutral', 'negative'];
+            const now = new Date();
+            
+            for (let i = 0; i < 20; i++) {
+                const startDate = new Date(now - (i + 1) * 86400000 + Math.random() * 86400000); // 过去几天内的随机时间
+                const duration = 10 + Math.floor(Math.random() * 120); // 10-130分钟
+                const endDate = new Date(startDate.getTime() + duration * 60000);
+                
+                const positiveRatio = Math.floor(Math.random() * 60) + 20; // 20-80%
+                const negativeRatio = Math.floor(Math.random() * 30) + 5; // 5-35%
+                const neutralRatio = 100 - positiveRatio - negativeRatio;
+                
+                data.push({
+                    id: `CONV-${2024}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(i + 1).padStart(4, '0')}`,
+                    startTime: startDate,
+                    endTime: endDate,
+                    messageCount: 10 + Math.floor(Math.random() * 90),
+                    positiveRatio: positiveRatio,
+                    negativeRatio: negativeRatio,
+                    neutralRatio: neutralRatio,
+                    isArchived: i > 15,
+                    hasWarning: i % 7 === 0
+                });
+            }
+            
+            return data;
+        }
+        
+        // 格式化日期
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${year}-${month}-${day} ${hours}:${minutes}`;
+        }
+        
+        // 筛选历史数据
+        function filterHistoryData() {
+            const searchTerm = document.getElementById('historySearch').value.toLowerCase();
+            const filterValue = document.getElementById('historyFilter').value;
+            const rows = document.querySelectorAll('.history-table tbody tr');
+            
+            rows.forEach(row => {
+                const idText = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const startDateText = row.querySelector('td:nth-child(3)').textContent;
+                let show = true;
+                
+                // 搜索筛选
+                if (searchTerm && !idText.includes(searchTerm)) {
+                    show = false;
+                }
+                
+                // 时间筛选
+                if (filterValue !== 'all') {
+                    const rowDate = new Date(startDateText);
+                    const now = new Date();
+                    
+                    if (filterValue === 'today') {
+                        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        if (rowDate < today) {
+                            show = false;
+                        }
+                    } else if (filterValue === 'week') {
+                        const weekAgo = new Date(now - 7 * 86400000);
+                        if (rowDate < weekAgo) {
+                            show = false;
+                        }
+                    } else if (filterValue === 'month') {
+                        const monthAgo = new Date(now - 30 * 86400000);
+                        if (rowDate < monthAgo) {
+                            show = false;
+                        }
+                    }
+                }
+                
+                row.style.display = show ? '' : 'none';
+            });
+        }
+        
+        // 查看历史记录详情
+        function viewHistory(id) {
+            alert(`查看历史记录: ${id}`);
+            // 这里可以实现查看历史记录详情的功能
+        }
+        
+        // 归档历史记录
+        function archiveHistory(id) {
+            if (confirm(`确定要归档记录 ${id} 吗？`)) {
+                alert(`已归档记录: ${id}`);
+                // 这里可以实现归档功能
+                loadHistoryData(); // 重新加载数据
+            }
+        }
+        
+        // 删除历史记录
+        function deleteHistory(id) {
+            if (confirm(`确定要删除记录 ${id} 吗？此操作不可恢复！`)) {
+                alert(`已删除记录: ${id}`);
+                // 这里可以实现删除功能
+                loadHistoryData(); // 重新加载数据
+            }
+        }
+    </script>
+</body>
+</html>
