@@ -1310,6 +1310,70 @@
       color: #c62828;
     }
 
+    /* AI分析模块样式 */
+    .ai-analysis-section {
+      margin-top: 30px;
+      padding: 25px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 15px;
+      border: 1px solid #dee2e6;
+    }
+
+    .ai-analysis-section h3 {
+      color: #495057;
+      margin-bottom: 20px;
+      font-size: 1.4rem;
+      text-align: center;
+    }
+
+    .ai-analysis-content {
+      min-height: 100px;
+    }
+
+    .ai-loading {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .ai-loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .ai-loading p {
+      color: #6c757d;
+      font-size: 1rem;
+    }
+
+    .ai-analysis-result {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #dee2e6;
+      line-height: 1.6;
+      color: #495057;
+      font-size: 1rem;
+    }
+
+    .ai-analysis-result p {
+      margin-bottom: 15px;
+    }
+
+    .ai-analysis-result strong {
+      color: #495057;
+      font-weight: 600;
+    }
+
     /* 心情趋势图画布样式 */
     #moodChart {
       width: 100%;
@@ -1428,17 +1492,15 @@
 
         <div class="analysis-section" id="analysisSection"></div>
 
-        <!-- 详细记录展示区域 -->
-        <div class="records-section">
-          <h3>📋 详细记录</h3>
-          <div class="filter-tabs" style="margin-bottom: 20px;">
-            <button class="filter-tab active" onclick="filterReportRecords('all')">全部</button>
-            <button class="filter-tab" onclick="filterReportRecords('mood')">心情记录</button>
-            <button class="filter-tab" onclick="filterReportRecords('voice')">语音日记</button>
-            <button class="filter-tab" onclick="filterReportRecords('sound')">声音收藏</button>
-          </div>
-          <div id="reportRecordsList" class="report-records-list">
-            <!-- 详细记录将通过 JavaScript 动态生成 -->
+        <!-- AI分析模块 -->
+        <div class="ai-analysis-section">
+          <h3>🤖 AI智能分析</h3>
+          <div id="aiAnalysisContent" class="ai-analysis-content">
+            <div class="ai-loading" id="aiLoading" style="display: none;">
+              <div class="ai-loading-spinner"></div>
+              <p>AI正在分析您的心情数据...</p>
+            </div>
+            <div id="aiAnalysisResult" class="ai-analysis-result"></div>
           </div>
         </div>
 
@@ -2032,8 +2094,8 @@
         // 生成分析和建议
         generateAnalysisAndAdvice(records, moodRecords, avgMood, happyDays, sadDays, happyPercentage, sadPercentage, neutralPercentage, moodVariance, mostCommonMood);
         
-        // 显示详细记录
-        displayReportRecords(records);
+        // 生成AI分析
+        generateAIAnalysis(records, moodRecords, avgMood, happyDays, sadDays, happyPercentage, sadPercentage, neutralPercentage, moodVariance, mostCommonMood);
       }
 
       // 绘制折线图
@@ -2322,102 +2384,7 @@
 
 
 
-      // 显示报告中的详细记录
-      let currentReportFilter = 'all';
-      
-      function displayReportRecords(records) {
-        const listDiv = document.getElementById('reportRecordsList');
-        
-        // 根据筛选条件过滤数据
-        let filteredRecords = records;
-        if (currentReportFilter !== 'all') {
-          filteredRecords = records.filter(r => r.type === currentReportFilter);
-        }
-        
-        // 按时间倒序排列
-        filteredRecords.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        
-        if (filteredRecords.length === 0) {
-          listDiv.innerHTML = `
-            <div class="no-data">
-              <div class="no-data-icon">📭</div>
-              <p>该时间段内暂无记录</p>
-            </div>
-          `;
-          return;
-        }
-        
-        // 生成数据列表
-        let html = '';
-        filteredRecords.forEach(record => {
-          const date = new Date(record.timestamp);
-          const dateStr = `${date.getFullYear()}年${String(date.getMonth() + 1).padStart(2, '0')}月${String(date.getDate()).padStart(2, '0')}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-          
-          let typeLabel = '';
-          let moodEmoji = '';
-          let content = '';
-          
-          if (record.type === 'mood') {
-            typeLabel = '心情记录';
-            const moodLabels = ['很糟糕', '不太好', '一般般', '还不错', '非常好'];
-            const moodEmojis = ['😢', '😕', '😐', '🙂', '😄'];
-            moodEmoji = moodEmojis[parseInt(record.mood) - 1];
-            content = `<div class="record-item-content"><strong>心情：${moodLabels[parseInt(record.mood) - 1]}</strong></div>`;
-            if (record.text) {
-              content += `<div class="record-item-content">${record.text}</div>`;
-            }
-          } else if (record.type === 'voice') {
-            typeLabel = '语音日记';
-            moodEmoji = '🎙️';
-            if (record.text) {
-              content = `<div class="record-item-content">${record.text}</div>`;
-            }
-            if (record.audio) {
-              content += `<div class="record-item-audio"><audio controls src="${record.audio}"></audio></div>`;
-            }
-          } else if (record.type === 'sound') {
-            typeLabel = '声音收藏';
-            moodEmoji = '🔊';
-            if (record.text) {
-              content = `<div class="record-item-content">${record.text}</div>`;
-            }
-            if (record.description) {
-              content += `<div class="record-item-content"><strong>描述：</strong>${record.description}</div>`;
-            }
-            if (record.audio) {
-              content += `<div class="record-item-audio"><audio controls src="${record.audio}"></audio></div>`;
-            }
-          }
-          
-          html += `
-            <div class="record-item">
-              <div class="record-item-header">
-                <div>
-                  <span class="record-item-mood">${moodEmoji}</span>
-                  <span class="record-item-type">${typeLabel}</span>
-                </div>
-                <span class="record-item-date">${dateStr}</span>
-              </div>
-              ${content}
-            </div>
-          `;
-        });
-        
-        listDiv.innerHTML = html;
-      }
-      
-      // 筛选报告记录
-      function filterReportRecords(type) {
-        currentReportFilter = type;
-        // 更新标签页激活状态
-        document.querySelectorAll('.records-section .filter-tab').forEach(tab => {
-          tab.classList.remove('active');
-        });
-        event.target.classList.add('active');
-        
-        // 重新生成报告以获取当前筛选的记录
-        generateReport();
-      }
+
 
       // 提取关键词
       function extractKeywords(text) {
@@ -2585,6 +2552,241 @@
         });
         
         listDiv.innerHTML = html;
+      }
+
+      // AI分析功能
+      async function generateAIAnalysis(records, startDate, endDate) {
+        const aiLoading = document.getElementById('aiLoading');
+        const aiResult = document.getElementById('aiAnalysisResult');
+        
+        // 显示加载状态
+        aiLoading.style.display = 'block';
+        aiResult.innerHTML = '';
+        
+        try {
+          // 准备AI分析的数据
+          const analysisData = prepareAIAnalysisData(records, startDate, endDate);
+          
+          // 调用AI API
+          const aiResponse = await callAIApi(analysisData);
+          
+          // 显示AI分析结果
+          aiResult.innerHTML = formatAIResponse(aiResponse);
+          
+        } catch (error) {
+          console.error('AI分析失败:', error);
+          aiResult.innerHTML = `
+            <div style="color: #dc3545; text-align: center; padding: 20px;">
+              <p>🤖 AI分析暂时不可用</p>
+              <p style="font-size: 0.9rem; color: #6c757d;">请检查网络连接或稍后重试</p>
+            </div>
+          `;
+        } finally {
+          // 隐藏加载状态
+          aiLoading.style.display = 'none';
+        }
+      }
+
+      // 准备AI分析数据
+      function prepareAIAnalysisData(records, startDate, endDate) {
+        // 统计心情分布
+        const moodCounts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+        const moodLabels = ['很糟糕', '不太好', '一般般', '还不错', '非常好'];
+        
+        // 按日期分组统计心情变化
+        const dailyMoods = {};
+        const weeklyTrend = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+        
+        records.forEach(record => {
+          if (record.mood) {
+            moodCounts[record.mood]++;
+            
+            // 按日期统计
+            const date = new Date(record.timestamp).toISOString().split('T')[0];
+            if (!dailyMoods[date]) {
+              dailyMoods[date] = [];
+            }
+            dailyMoods[date].push(parseInt(record.mood));
+            
+            // 按星期统计（0-6，0为周日）
+            const dayOfWeek = new Date(record.timestamp).getDay();
+            weeklyTrend[dayOfWeek + 1] += parseInt(record.mood);
+          }
+        });
+        
+        // 计算每日平均心情
+        const dailyAverages = {};
+        Object.keys(dailyMoods).forEach(date => {
+          const moods = dailyMoods[date];
+          dailyAverages[date] = (moods.reduce((a, b) => a + b, 0) / moods.length).toFixed(2);
+        });
+        
+        // 提取关键词
+        const allText = records
+          .filter(r => r.text)
+          .map(r => r.text)
+          .join(' ');
+        
+        const keywords = extractKeywords(allText).slice(0, 15);
+        
+        // 计算平均心情
+        const moodRecords = records.filter(r => r.mood);
+        const avgMood = moodRecords.length > 0 
+          ? moodRecords.reduce((sum, r) => sum + parseInt(r.mood), 0) / moodRecords.length 
+          : 0;
+        
+        // 计算心情稳定性（标准差）
+        let moodStability = 0;
+        if (moodRecords.length > 1) {
+          const variance = moodRecords.reduce((sum, r) => {
+            return sum + Math.pow(parseInt(r.mood) - avgMood, 2);
+          }, 0) / moodRecords.length;
+          moodStability = Math.sqrt(variance).toFixed(2);
+        }
+        
+        // 统计记录类型
+        const typeCounts = {
+          mood: records.filter(r => r.type === 'mood').length,
+          voice: records.filter(r => r.type === 'voice').length,
+          sound: records.filter(r => r.type === 'sound').length
+        };
+        
+        // 积极/消极情绪比例
+        const positiveCount = moodCounts[4] + moodCounts[5];
+        const negativeCount = moodCounts[1] + moodCounts[2];
+        const neutralCount = moodCounts[3];
+        const totalMoodRecords = positiveCount + negativeCount + neutralCount;
+        
+        return {
+          moodDistribution: moodCounts,
+          moodLabels: moodLabels,
+          keywords: keywords,
+          averageMood: avgMood.toFixed(2),
+          moodStability: moodStability,
+          recordCounts: typeCounts,
+          totalRecords: records.length,
+          dateRange: `${startDate} 至 ${endDate}`,
+          textContent: allText,
+          dailyAverages: dailyAverages,
+          weeklyTrend: weeklyTrend,
+          positiveRatio: totalMoodRecords > 0 ? (positiveCount / totalMoodRecords * 100).toFixed(1) : 0,
+          negativeRatio: totalMoodRecords > 0 ? (negativeCount / totalMoodRecords * 100).toFixed(1) : 0,
+          neutralRatio: totalMoodRecords > 0 ? (neutralCount / totalMoodRecords * 100).toFixed(1) : 0
+        };
+      }
+
+      // 调用AI API
+      async function callAIApi(analysisData) {
+        const apiUrl = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
+        const apiKey = 'bd747896-e89b-46f4-a5ab-0a232d086845';
+        const model = 'ep-20251015101857-wc8xz';
+        
+        // 构建AI提示词
+        const prompt = buildAIPrompt(analysisData);
+        
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              {
+                role: 'system',
+                content: '你是一位专业的心理咨询师，拥有丰富的心理健康咨询经验。请基于用户的心情数据，提供专业的心理分析、情绪状态评估和心理健康建议。请用温暖、专业且富有同理心的语气回答，关注用户的情绪健康和心理成长。'
+              },
+              {
+                role: 'user',
+                content: prompt
+              }
+            ]
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API请求失败: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.choices[0].message.content;
+      }
+
+      // 构建AI提示词
+      function buildAIPrompt(analysisData) {
+        return `作为专业的心理咨询师，请基于以下用户心情数据提供全面的心理健康分析：
+
+📊 数据概览
+- 分析时段：${analysisData.dateRange}
+- 总记录数：${analysisData.totalRecords}条
+- 记录类型：心情记录${analysisData.recordCounts.mood}条，语音日记${analysisData.recordCounts.voice}条，声音收藏${analysisData.recordCounts.sound}条
+
+😊 心情分布深度分析
+- 非常糟糕（1分）：${analysisData.moodDistribution[1]}次
+- 不太好（2分）：${analysisData.moodDistribution[2]}次  
+- 一般般（3分）：${analysisData.moodDistribution[3]}次
+- 还不错（4分）：${analysisData.moodDistribution[4]}次
+- 非常好（5分）：${analysisData.moodDistribution[5]}次
+- 平均心情值：${analysisData.averageMood}/5分
+- 心情稳定性（标准差）：${analysisData.moodStability}
+
+� 情绪趋势分析
+- 积极情绪比例：${analysisData.positiveRatio}%
+- 消极情绪比例：${analysisData.negativeRatio}%
+- 中性情绪比例：${analysisData.neutralRatio}%
+
+�🔍 情绪关键词洞察
+${analysisData.keywords.length > 0 ? analysisData.keywords.join('、') : '暂无关键词'}
+
+请从心理咨询师的专业角度提供以下深度分析：
+
+1. **情绪健康综合评估**
+   - 基于情绪分布和稳定性评估整体心理健康水平
+   - 分析积极/消极情绪平衡状况
+   - 识别情绪波动模式和潜在风险
+
+2. **情绪模式深度洞察**
+   - 从关键词分析情绪触发因素和生活事件影响
+   - 评估情绪表达和调节能力
+   - 识别可能的压力源和应对模式
+
+3. **专业心理干预建议**
+   - 针对具体情绪问题的心理调适策略
+   - 情绪管理技巧和压力应对方法
+   - 预防情绪恶化的具体措施
+
+4. **心理健康成长规划**
+   - 情绪觉察和表达能力的提升路径
+   - 积极心态培养和韧性建设方法
+   - 长期心理健康维护的个性化方案
+
+5. **危机预警和求助建议**
+   - 识别需要专业帮助的信号
+   - 提供适当的求助渠道和资源
+   - 建立健康的社会支持系统
+
+请以温暖、专业、富有同理心的语气回答，重点关注用户的情绪健康和心理成长，提供具体可行的建议。`;
+      }
+
+      // 格式化AI响应
+      function formatAIResponse(aiResponse) {
+        // 将AI返回的文本转换为HTML格式
+        const paragraphs = aiResponse.split('\n').filter(p => p.trim());
+        
+        let html = '';
+        paragraphs.forEach(paragraph => {
+          if (paragraph.trim()) {
+            // 检测标题（包含数字或特殊符号的段落）
+            if (paragraph.match(/^\d+\.|^[一二三四五六七八九十]、|^【|^##/)) {
+              html += `<p><strong>${paragraph}</strong></p>`;
+            } else {
+              html += `<p>${paragraph}</p>`;
+            }
+          }
+        });
+        
+        return html || '<p>AI分析结果为空，请重试。</p>';
       }
 
       // 页面加载完成后初始化
